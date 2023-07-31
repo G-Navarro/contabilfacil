@@ -1,0 +1,44 @@
+#tabelaponto {
+    margin-top: 1rem;
+    border-collapse: collapse;
+    font-size: 1.2rem;
+}
+
+#tabelaponto th,
+#tabelaponto td {
+  border: 1px solid #f1f1f1;
+  text-align: center;
+  width: 3rem;
+}
+
+#tabelaponto th:not(:first-child),
+#tabelaponto td:not(:first-child) {
+  width: 5.5rem;
+}
+
+#marcadorponto div{
+    display: inline-block;
+}
+
+#marcadorponto div > *{
+    display: block;
+    width: 7rem;
+    margin: 0.2rem 0;
+}
+
+.botao_seta{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid #f2f2f2;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.botao_seta:hover{
+  background-color: #303436;
+  color: #f2f2f2;
+}

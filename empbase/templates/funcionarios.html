@@ -1,0 +1,70 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+
+{% if user.is_superuser %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+        </div>
+        <div class="accordion-content hidden">
+            <div id="dragNdrop" class="dragNdrop">
+                <div>
+                    <form id="uploadarquivo">
+                        <input id="modelo" type="hidden" value="funcionarios">
+                        <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                        <input id="arquivo" name="arquivo" type="file">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="accordion borda">
+    <div class="accordion-main">
+        <p><i class="fa-solid fa-user-plus"></i> Cadastrar Funcionário</p>
+    </div>
+    <div class="accordion-content hidden">
+        <form method="POST" class="formdjango">
+            {{ form.as_div }}
+            <br>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+</div>
+{% if funcs == None %}
+    <p class="borda msg">Nenhum funcionário cadastrado</p>
+{% else %}
+    {% for func in funcs %}
+    <div class="accordion borda">
+    <div class="accordion-main flexstart">
+        <a href="">
+            <div class="btnbig">
+                <i class="fa-solid fa-address-card"></i> {{ func.cod }}
+            </div>
+        </a>
+        <p {% if func.demitido %}style="color:#ff3333" {% endif %}>
+         {{ func.nome }} {% if func.demitido %}- Demitido em: {{ func.demissao }}{% endif %}</p>
+    </div>
+    <div class="accordion-content hidden">
+                <p>CPF:  {{ func.cpf }} | PIS: {{ func.pis }}</p>
+                <div class="borda padding-sm infos">
+                    <p class="tituloinfo">Informações profissionais:</p>
+                    <p><span>Admissão:</span>  {{ func.admissao }}</p>
+                    <p><span>Salário:</span> {{ func.salario }}</p>
+                    <p><span>Cargo:</span> {{ func.cargo }} - CBO: {{ func.cbo }}</p>
+                    <p><span>Admissão:</span> {{ func.admissao }}</p>
+                </div>
+                <div class="borda padding-sm infos">
+                    <p class="tituloinfo">Informações pessoais:</p>
+                    <p><span>Pai:</span> {{ func.pai }}</p>                
+                    <p><span>Mãe:</span> {{ func.mae }}</p>
+                </div>
+    </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

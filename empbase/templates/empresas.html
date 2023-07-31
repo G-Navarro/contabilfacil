@@ -1,0 +1,44 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+
+{% if user.is_superuser %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+        </div>
+        <div class="accordion-content hidden">
+            <div id="dragNdrop" class="dragNdrop">
+                <div>
+                    <form id="uploadarquivo">
+                        <input id="modelo" type="hidden" value="empresas">
+                        <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                        <input id="arquivo" name="arquivo" type="file">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<div class="grid-main">
+    {% for emp in emps %}
+    <div class="borda" style="margin: 0.5rem; min-height: 6rem;">
+        <div style="display: flex; justify-content: space-between; height: 100%;">
+            <div style="
+                padding: 0.7rem;">
+                <p><i class="fa-regular fa-building"></i> {{emp.cod}} - {{emp.nome}}</p>
+            </div>
+            <div style="width: 5rem;">
+                <form method="post" style="height: 100%;">
+                {% csrf_token %}
+                    <input type="hidden" name="idemp" value="{{emp.id}}">
+                    <button type="submit" class="btnform"><i class="fa-solid fa-arrow-right"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

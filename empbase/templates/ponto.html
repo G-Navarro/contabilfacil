@@ -1,0 +1,75 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+<div>
+    <div class="content_left">
+        <input type="text" style="display: block; width: 90%; margin: 0.5rem auto; padding: 0.5rem;" oninput="pesquisa(this, 'funcionariosdiv')" placeholder="Pesquisar...">
+    <div style="overflow-y: scroll; height: 100%;" id="funcionariosdiv">
+        {% for funcl in funcs %}
+            <a href="{% url 'ponto' %}?funcid={{ funcl.id }}">{{ funcl.nome }}</a>
+        {% endfor %}
+    </div>
+    </div>
+
+    <div class="content_right">
+        <div style="display: flex; justify-content: space-around;">
+            <a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>
+            <p style="text-align: center; font-size: 2rem;">{{ func.nome }}</p>
+            <a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div style="display: flex; justify-content: space-evenly;">
+            <div style="display: inline-block;">
+                <label for="diainicio">Dia em que iniciou o turno</label>
+                <select name="diainicio" id="diainicio" style="width: 4rem;text-align: center;">
+                    {% for dia in diadetrabalho %}
+                        <option value="{{dia.inicioem.day}}" {% if dia.encerrado == false %}selected{% endif %}>{{dia.inicioem.day}}</option>
+                    {% endfor %}
+                </select>
+                <div id="marcadorponto"> 
+                    <div>
+                        <input type="time" value="{{ agora|time:'H:i' }}" readonly>
+                        <button id="{{ func.id }}" class="btn" onclick="marcaponto(this)">Entrada</button>
+                    </div>
+                    
+                    <div>
+                        <input type="time" value="{{ agora|time:'H:i' }}" readonly>
+                        <button id="{{ func.id }}" class="btn" onclick="marcaponto(this)">Intervalo</button>
+                    </div>
+                    
+                    <div>
+                        <input type="time" value="{{ agora|time:'H:i' }}" readonly>
+                        <button id="{{ func.id }}" class="btn" onclick="marcaponto(this)">Fim Intervalo</button>
+                    </div>
+                    
+                    <div>
+                        <input type="time" value="{{ agora|time:'H:i' }}" readonly>
+                        <button id="{{ func.id }}" class="btn" onclick="marcaponto(this)">Saida</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table id="tabelaponto">
+            <thead>
+                <tr>
+                    <th>Dia</th>
+                    <th>Entrada</th>
+                    <th>Intervalo</th>
+                    <th>Fim de Intervalo</th>
+                    <th>Saída</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diaturno in diadetrabalho %}
+                    <tr>
+                        <td>{{ diaturno.inicioem.day }}</td>
+                        <td>{{ diaturno.entrada|time:"H:i" }}</td>
+                        <td {% if diaturno.intervalo.day != diaturno.inicioem.day %}style="background-color: #ff9933; color:black;"{% endif %}>{{ diaturno.intervalo|time:"H:i" }}</td>
+                        <td {% if diaturno.fimintervalo.day != diaturno.inicioem.day %}style="background-color: #ff9933; color:black;"{% endif %}>{{ diaturno.fimintervalo|time:"H:i" }}</td>
+                        <td {% if diaturno.saida.day != diaturno.inicioem.day %}style="background-color: #ff9933; color:black;"{% endif %}>{{ diaturno.saida|time:"H:i" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'footer.html' %}

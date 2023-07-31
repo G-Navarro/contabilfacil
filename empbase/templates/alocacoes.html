@@ -1,0 +1,88 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+<div style="border: 1px solid #999; border-radius: 3px; padding: 0.7rem; margin: 0.5rem;">
+    <p style="display: inline-block;">{% if alterar == None%} Adicionar {% else %} Alterar {% endif %} alocação {% if msg %} {{ msg }} {% endif %} | </p>
+    <form style="display: inline-block;" method="post">
+        {% csrf_token %}
+        <label for="num">CNPJ/CNO: </label>
+        <input id="num" name="num" type="text" oninput="buscadadosobra(this, 'obracod')">
+        <button type="submit" class="btn">Adcionar</button>
+    </form>
+</div>
+{% if alocacoes == None %}
+    <p class="borda msg">Nenhuma alocação</p>
+{% else %}
+<div class="abasgrupo">
+    <p class="abasmenu">Obras</p><p class="abasmenu">Funcionários</p>
+</div>
+<!-- aba alocacoes-->
+<div class="abas">
+    {% for alocacao in alocacoes %}
+            <div class="accordion borda">
+                <div class="accordion-main flexstart">
+                    {% if alocacao.nota.id == None%}
+                    <a href="">
+                        <div class="btnbig b_right">
+                            SEM NOTA
+                        </div>
+                    </a>
+                    {% else %}
+                        <a href="{% url 'notas' %}?id={{ alocacao.nota.id }}">
+                            <div class="btnbig b_right">
+                                <i class="fa-solid fa-file-invoice"></i> Nota: {{ alocacao.nota.numero }}
+                            </div>
+                        </a>
+                    {% endif %}
+                        <a href="{% url 'obras' alocacao.obra.id %}">
+                            <div class="btnbig b_right">
+                                <i class="fa-solid fa-trowel-bricks"></i> Obra: {{ alocacao.obra.cod }}
+                            </div>
+                        </a>
+                    <p>{{ alocacao.obra.nome }}
+                       - {% if alocacao.obra.cno %}CNO: {{ alocacao.obra.cno }}{% else %}CNPJ: {{ alocacao.obra.cnpj }}{% endif %} <br>
+                      | Cr: {{alocacao.criado}} | Atu: {{alocacao.atualizado}} </p>
+                </div>
+                <div class="accordion-content hidden">
+                    <div style="margin-bottom: 0.5rem;">
+                        <input id="{{alocacao.obra.id}}" type="text" oninput="buscadados(this, 'funcnome')">
+                    </div>
+                    {% with funcs=alocacao.func.get_queryset %}
+                        {% for func in funcs %}
+                            <div>
+                                <span><span>{{ func.cod }}</span> - {{ func.nome }}</span><button onclick='deletaaloc(this, "{{ func.id }}", "{{ alocacao.obra.id }}")'><i class="fa-regular fa-circle-xmark"></i></button>
+                            </div>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+    {% endfor %}
+</div>
+<!-- aba funcionarios-->
+<div class="abas hidden">
+    {% for func in funcs %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <p>{{ func.cod }} - {{ func.nome }} | {{ func.admissao }}</p>
+        </div>
+        <div class="accordion-content hidden">
+            {% with alocs=func.alocacao_set.all %}
+                {% if alocs|length == 0 %}
+                    <p>Nenhuma alocação cadastrada</p>
+                {% endif %}
+                {% for aloc in alocs %}
+                    {% if aloc.comp.month == ua.comp.month and aloc.comp.year == ua.comp.year %}
+                        <div>
+                            <p style="margin-top: 0.3rem; padding: 0.3rem; border: 1px solid #ccc; border-radius: 2px;">{{ aloc.obra.cod }} - {{ aloc.obra.nome }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

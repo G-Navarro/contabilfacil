@@ -1,0 +1,25 @@
+.content_left{
+    margin-top: -8px;
+    max-width: 20rem;
+    border-right: 1px solid black;
+    box-shadow: 0 6px 8px black;
+    position: fixed;
+    height: 100%;
+}
+
+.content_left a{
+    display: inline-block;
+    width: 100%;
+    padding: 0.75rem;
+    color: #f1f1f1;
+    list-style: none;
+}
+
+.content_left a:hover{
+    color: #19376d;
+    background-color: #f1f1f1;
+}
+
+.content_right{
+    margin-left: 21rem;
+}

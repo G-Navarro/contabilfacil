@@ -1,0 +1,21 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+
+<div class="grid-main">
+    {% for imp in impostos %}
+        <div class="borda padding-sm" style="margin: 0.2rem;">
+            <p>{{ imp.nome }}</p>
+            <p>Competência: {{ imp.comp.month }}/{{ imp.comp.year }} </p>
+            <p>R$ {{ imp.valor }}</p>
+            <p>VCTO: {{ imp.vcto }}</p>
+            <div {% if imp.pago == True %} class="confere csuccess" {% else %} class="confere borda cdanger" {% endif %} id="{{ imp.id }}" onclick="imposto_pago(this, pagamento)" style="height: 2.5rem;">
+                <span>Pago:</span>
+                {% if imp.pago == True %} <i class="fa-solid fa-file-circle-check"></i> {% else %} <i class="fa-solid fa-file-circle-xmark"></i> {% endif %}                        
+            </div>            
+        </div>
+    {% endfor %}
+</div>
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

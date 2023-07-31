@@ -1,0 +1,21 @@
+<h1 id="titulo" {% if "Escritório Contábil Paulista" in titulo %}class="font-mono corpadrao"{% else %}class="corpadrao" {% endif %}>{{titulo}}</h1>
+<div style="border-top: 1px solid #A5D7E8;"></div>
+<div id="links" class="corpadrao">
+    <a target="_blank" onclick="alakazam('#competencia')"><i class="fa-regular fa-calendar"></i> {{ua.comp|date:"m/y"}}</a>
+    <div id="competencia">
+            <label for="comp">Competência:</label>
+            <input id="comp" name="comp" type="month" value="{{comp}}">
+            <button type="submit" class="btn" onclick="alteracomp(this)">Alterar</button>
+    </div>
+    <a href="{% url 'empresas' %}">Empresas</a>
+    <a href="{% url 'funcionarios' %}">Funcionários</a>
+    <a href="{% url 'obras' 0 %}">Obras</a>
+    <a href="{% url 'notas' %}">Notas</a>
+    <a href="{% url 'alocacoes' 0 %}">Alocações</a>
+    <a href="{% url 'impostos' %}">Impostos</a>
+    <a href="{% url 'tarefas' %}">Tarefas</a>
+    <a href="{% url 'ponto' %}">Ponto</a>
+    {% if not user.eh_auxiliar %}
+        <a href="{% url 'usuarios' %}">Usuários</a>
+    {% endif %}
+</div>

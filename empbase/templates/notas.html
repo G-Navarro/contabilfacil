@@ -1,0 +1,69 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+<div class="accordion borda">
+    <div class="accordion-main flexstart">
+        <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+    </div>
+    <div class="accordion-content hidden">
+        <div id="dragNdrop" class="dragNdrop">
+            <div>
+                <form id="uploadarquivo">
+                    <input id="modelo" type="hidden" value="notas">
+                    <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                    <input id="arquivo" name="arquivo" type="file">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if notas == None %}
+    <p class="borda msg">Nenhuma nota cadastrada</p>
+{% else %}
+<br>
+<p style="margin-left: 1rem;">Total: {{ total|floatformat:2 }} | INSS: {{ inss|floatformat:2 }} | ISS: {{ iss }}</p>
+<br>
+
+<div class="accordion borda">
+    <div class="accordion-main">
+        <p>Alterar Nota</p>
+    </div>
+    <div class="accordion-content {{active}}">
+        <input type="hidden" id="id" name="id" value="{{alterar.id}}">            
+        <p>Nota: {{alterar.numero}}</p>             
+        <label for="obra">Obra CNPJ/CNO:</label>
+        <input type="text" id="obra" name="obra" value="{{alterar.obra}}" oninput="buscadadosobra(this, 'obracod')" required>
+        <button onclick="buscadadosobra(this, 'obracod')">Buscar</button>
+    </div>
+</div>
+
+{% for nota in notas %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+                <a href="{% url 'notas' %}?id={{ nota.id }}">
+                    <div class="btnbig b_right"><i class="fa-solid fa-file-invoice"></i> Nota: {{ nota.numero }}</div>
+                </a>
+                <a href="{% url 'obras' nota.tomador.id %}">
+                    <div class="btnbig b_right"><i class="fa-solid fa-trowel-bricks"></i> Obra: {{ nota.tomador.cod }}</div>
+                </a>
+            <p  {% if nota.canc == 1 %} style="color: #ff3333;" {% endif %}>{{ nota.tomador.nome }}
+                        {% if nota.tomador.cno != None %}
+                            - CNO: {{ nota.tomador.cno }}
+                        {% else %}
+                            - CNPJ: {{ nota.tomador.cnpj }}
+                        {% endif %}
+                        {{ nota.atualizado }}
+            </p>
+        </div>
+        <div class="accordion-content hidden">
+            <p>Endereço: {{ nota.tomador.endereco }} - Nº: {{ nota.tomador.num }} - Bairro: {{ nota.tomador.bairro }}</p>
+            <p>Município: {{ nota.tomador.municipio }} - UF: {{ nota.tomador.uf }} - CEP: {{ nota.tomador.cep }}</p>
+            <p><span>Valor: {{ nota.valor }} </span><span>INSS: {{ nota.inss }} </span><span>ISS: {{ nota.iss }}</span></p>
+        </div>
+    </div>
+{% endfor %}
+{% endif %}
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

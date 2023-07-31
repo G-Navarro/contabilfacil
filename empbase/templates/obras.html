@@ -1,0 +1,70 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+
+{% if user.is_superuser %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+        </div>
+        <div class="accordion-content hidden">
+            <div id="dragNdrop" class="dragNdrop">
+                <div>
+                    <form id="uploadarquivo">
+                        <input id="modelo" type="hidden" value="obras">
+                        <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                        <input id="arquivo" name="arquivo" type="file">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion borda">
+        <div class="accordion-main">
+            <p>Alterar Obra</p>
+        </div>
+        <div class="accordion-content {{active}}">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" id="id" name="id" value="{{alterar.id}}" required>
+                
+                <label for="cod">Código:</label>
+                <input type="text" id="cod" name="cod" value="{{alterar.cod}}" required>
+                
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="{{alterar.nome}}" required>
+                
+                <label for="cnpj">CNPJ:</label>
+                <input type="text" id="cnpj" name="cnpj" value="{{alterar.cnpj}}">
+                
+                <label for="cno">CNO:</label>
+                <input type="text" id="cno" name="cno" value="{{alterar.cno}}">
+                
+                <button type="submit">Enviar</button>
+                <p>{{alterar.atualizado}}</p>
+            </form>
+        </div>
+    </div>
+{% endif %}
+  
+{% for obra in obras %}
+<div class="accordion borda">
+    <div class="accordion-main flexstart">
+        <a href="{% url 'obras' obra.id %}">
+            <div class="btnbig b_right">
+                <i class="fa-solid fa-trowel-bricks"></i> {{obra.cod}}
+            </div>
+        </a>
+        <p>{{obra.nome}} - {% if obra.cno %}CNO: {{ obra.cno }}{% else %}CNPJ: {{ obra.cnpj }}{% endif %} - {{ obra.atualizado }}</p>
+    </div>
+    <div class="accordion-content hidden">
+            <p>CNPJ: {{ obra.cnpj }} | CNO: {{ obra.cno }}</p>
+            <p>{{obra.endereco}} - {{obra.num}} - {{obra.bairro}}</p>
+            <p>{{obra.municipio}} - {{obra.uf}} - {{obra.cep}}</p>
+            <p>Atualizado por: {{obra.usuario}}</p>
+    </div>
+</div>
+{% endfor %}
+{% include 'footer.html' %}
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

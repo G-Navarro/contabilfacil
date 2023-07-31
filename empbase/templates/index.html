@@ -1,0 +1,14 @@
+{% load static %}
+{% include 'header.html' %}
+<body>
+    {% include 'links.html' %}
+    <p>{{hello}}</p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="usuario">Usuário</label>
+        <input id="usuario" name="usuario" type="text">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="text">
+        <button type="submit">Logar</button>
+</body>
+{% include 'footer.html' %}
