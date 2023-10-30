@@ -1,0 +1,32 @@
+{% load static %}
+{% load hash_filters %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+    <div style="position: fixed;width: 100%;height: 100%;display: flex;align-content: center;justify-content: center;align-items: center;">
+        <form method="post">
+            <div id="login">
+                {% csrf_token %}
+                <p class="padding-sm">Trocar senha</p>
+                <label for="novasenha">Senha:</label>
+                <input id="novasenha" name="novasenha" type="text">
+                <label for="novasenhaconfere">Repetir Senha:</label>
+                <input id="novasenhaconfere" name="novasenhaconfere" type="text">
+                <button class="btn" type="submit">Alterar</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        $('#novasenhaconfere').on('input', function(){
+            setTimeout(function(){
+            if($('#novasenha').val() != $('#novasenhaconfere').val()){
+                $('#novasenhaconfere').addClass('cdanger')
+            } else {
+                $('#novasenhaconfere').removeClass('cdanger')
+            }}, 500);
+        })
+    </script>
+<script src="{% static 'js/csrf.js' %}"></script>
+<script src="{% static 'js/funcoespadrao.js' %}"></script>
+<script src="{% static 'js/scroll.js' %}"></script>
+<script src="{% static 'js/marcaponto.js' %}"></script>
+</html>

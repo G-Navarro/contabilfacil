@@ -1,0 +1,334 @@
+{% load static %}
+{% load hash_filters %} 
+<div id="topo">
+{% include 'header.html' %}
+{% include 'links.html' %}
+    <div id="filtros">
+        <input  id="pesquisa" type="text" oninput="pesquisa(this, 'resultado_pesquisa')" placeholder="Pesquisar...">
+        <div id="resultado_pesquisa">
+            {% for funcl in funcs %}
+                <a href="{% url 'funcionarios' funcl.cod%}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% if alerta %}
+{{ alerta }}
+{% else %}
+    <div style="margin: 0.5rem;">
+        <div class="borda padding-sm infos">
+            <p>                
+                <a style="display: inline-block; margin: 0.2rem;" class="btn" href="{% url 'relatorioponto' %}?funcid={{ func.cod }}">
+                        <i class="fa-solid fa-user-clock"></i> {{ func.cod }}
+                </a>
+                <span>NOME:</span> <span {% if func.demitido %}style="color:#ff3333"{% else %}style="color:#f2f2f2"{% endif %}>{{ func.nome }} {% if func.demitido %}- Demitido: {{ func.demissao|date:"d/m/Y" }}{% endif %}</span>
+            </p>
+            <p><span>CPF:</span> {{ func.cpf }} | <span>PIS:</span> {{ func.pis }}</p>
+        </div>
+        <div class="borda padding-sm infos">
+            <p class="tituloinfo">Informações profissionais:</p>
+            <p><span>Admissão:</span>  {{ func.admissao }}</p>
+            <p><span>Salário:</span> {{ func.salario }}</p>
+            <p><span>Cargo:</span> {{ func.cargo }} - CBO: {{ func.cbo }}</p>
+            <p><span>CTPS:</span> {{ func.ctps }} <span>Série:</span> {{ func.ctpsserie }}</p>
+            <p><span>Data de emissão:</span> {{ func.ctpsdata|date:"d/m/Y" }}</p>
+            <p><span>UF:</span> {{ func.ctpsuf }}</p>
+            <p><span>Turno:</span> {{ func.jornada }}</p>
+            {% if func.vt %}
+                <p><span>VT:</span> {{ func.vt.valor }}</p>
+            {% endif %}
+        </div>
+        <div class="borda padding-sm infos">
+            <p class="tituloinfo">Informações pessoais:</p>
+            <p><span>RG:</span> {{ func.rg }} <span>Data de emissão:</span> {{ func.rgemiss|date:"d/m/Y" }}</p>
+            <p><span>Orgão Emissor:</span> {{ func.rgorgao }}</p>
+            <p><span>Logradouro:</span> {{ func.logradouro }}</p>
+            <p><span>Número:</span> {{ func.numero }}</p>
+            <p><span>Bairro:</span> {{ func.bairro }}</p>
+            <p><span>Cidade:</span> {{ func.cidade }}</p>
+            <p><span>UF:</span> {{ func.uf }}</p>
+            <p><span>Complemento:</span> {{ func.complemento }}</p>
+            <p><span>CEP:</span> {{ func.cep }}</p>
+            <p><span>Data de nascimento:</span> {{ func.datanasc|date:"d/m/Y" }}</p>
+            <p><span>Cidade de nascimento:</span> {{ func.cidadenasc }}</p>
+            <p><span>UF de nascimento:</span> {{ func.ufnasc }}</p>
+            <p><span>Pai:</span> {{ func.pai }}</p>                
+            <p><span>Mãe:</span> {{ func.mae }}</p>
+        </div>
+    </div>
+    <div class="funcinfos">
+        <div class="borda padding-sm">
+            {% for periodo_aq in periodo_aq %}
+                {% if periodo_aq.diasdedireito > 0 %}
+                    <button class="btn" style="margin-bottom: 0.2rem;" onclick="mostrar(this)">Férias</button>
+                    <div class="formdisplay hidden">
+                        <div>
+                            <div class="forminput_barra">
+                                <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div class="formgroup">
+                                <form method="post">     
+                                    {% csrf_token %}
+                                    <input type="hidden" id="funcid" name="funcid" value="{{ func.cod }}">
+                                    <input type="hidden" id="periodo_aq_inicio" name="periodo_aq_inicio" value="{{ periodo_aq.periodoinicio|date:'Y-m-d' }}">
+                                    <div class="borda padding-sm" style="text-align: center;">
+                                        <p class="titulo">Lançar Férias</p>
+                                        <p> {{ periodo_aq.periodoinicio|date:"d/m/Y" }} - {{ periodo_aq.periodofim|date:"d/m/Y" }}</p>
+                                        <p><span class="titulo">Data máxima:</span> {{ periodo_aq.datamaxima|date:'d/m/Y' }}</p>
+                                    </div>
+                                    <input type="hidden" id="datamaxima" value="{{ periodo_aq.datamaxima|date:'Y-m-d' }}">
+                                    <div class="forminput" style="margin: 1rem 0;">
+                                        <label for="diasdedireito">Dias de Direito:</label>
+                                        <input type="number" name="diasdedireito" id="diasdedireito" value="{{ periodo_aq.diasdedireito }}">
+                                    </div>
+                                    <div class="forminput">
+                                        <label for="avisoferias">Aviso:</label>
+                                        <input type="date" name="avisoferias" id="avisoferias" readonly>
+                                    </div>
+                                    <div class="forminput">
+                                        <label for="inicioferias">Início:</label>
+                                        <input type="date" name="inicioferias" id="inicioferias">
+                                    </div>
+                                    <div class="forminput">
+                                        <label for="fimferias">Fim:</label>
+                                        <input type="date" name="fimferias" id="fimferias" readonly>
+                                    </div>
+                                    <button class="btn btn-red" type="submit">Gravar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div style="padding: 0.7rem 0.1rem; display: flex; align-items: center; justify-content: flex-start;">
+                    <div style="margin-left: 0.5rem;">
+                        <div class="borda padding-sm sombra">
+                            <div class="borda padding-sm" style="text-align: center;">
+                                <p><span class="titulo">Período Aquisitivo</span></p>
+                                <p> {{ periodo_aq.periodoinicio|date:"d/m/Y" }} - {{ periodo_aq.periodofim|date:"d/m/Y" }}</p>
+                            </div>
+                            {% with ferias=periodo_aq.ferias_set.all %}
+                                {% for ferias in ferias %}
+                                    <p><span class="titulo">Inicio:</span> {{ ferias.inicio|date:"d/m/Y" }} - <span class="titulo">Fim:</span> {{ ferias.final|date:"d/m/Y" }}</p>
+                                    {% for tramite in ferias.tramite.get_queryset %}
+                                        <div style="margin: 0.5rem;"  class="observacao">
+                                            <span style="display: inline-block; padding: 0.3rem;" {% if tramite.finalizado %} class="csuccess " {% else %} class="borda cdanger" {% endif %}>
+                                                    <span>{{ tramite.nome }}:</span>
+                                                {% if tramite.finalizado %}
+                                                    <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                                                {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                                            </span>
+                                            <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                                        </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="borda padding-sm">
+            <button class="btn btn-danger"  style="margin-bottom: 0.2rem;" onclick="mostrar(this)">Faltas</button>
+            <!-- lancar faltas -->
+                <div id="lancarfaltas" class="formdisplay hidden">
+                    <div>
+                        <div class="forminput_barra">
+                            <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="formgroup">
+                            <form method="post">     
+                                {% csrf_token %}
+                                <input type="hidden" id="funcid" name="funcid" value="{{ func.cod }}">
+                                <input type="hidden" id="periodoinicio" name="periodoinicio" value="{{ diaedit.inicioem|date:'d/m/Y' }}">
+                                <div class="borda padding-sm">
+                                    <p>Lançar Faltas</p>
+                                </div>
+                                <div class="forminput" style="margin: 1rem 0;">
+                                    <label for="aviso">Falta:</label>
+                                    <input type="date" name="falta" id="falta">
+                                </div>
+                                <div class="forminput">
+                                    <label for="aviso">Até:</label>
+                                    <input type="date" name="faltaate" id="faltaate">
+                                </div>
+                                <button class="btn btn-red" type="submit">Gravar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% for falta in faltas %}
+                <div style="padding: 0.7rem 0.1rem;">
+                    <span> {{ falta.diatrabalhado.inicioem|date:"d/m/Y" }} - {{ falta.valor|calcula_minuto }}</span>
+                </div>
+            {% endfor %}
+        </div>        
+    </div>
+    <div class="borda padding-sm" style="margin: 0.5rem;">
+    {% if not demissao %}
+        <button class="btn btn-red" onclick="mostrar(this)">Demitir</button>
+        <div class="formdisplay hidden">
+            <div>
+                <div class="forminput_barra">
+                    <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="formgroup">
+                    <form method="post">     
+                        {% csrf_token %}
+                        <div class="borda padding-sm">
+                            Demissão
+                        </div>                    
+                        <div class="forminput">
+                            <label for="tiporescisao">Tipo:</label>
+                            <select name="tiporescisao" id="tiporescisao">
+                                <option value="">---</option>
+                                <option value="PED">Pedido de Demissão</option>
+                                <option value="DSJ">Demissão Sem Justa Causa</option>
+                                <option value="DCJ">Demissão Com Justa Causa</option>
+                                <option value="TERM">Término de Experiência</option>
+                                <option value="TERANT">Término de Experiência Antecipado</option>
+                            </select>
+                        </div>
+                        <div class="forminput">
+                            <label for="tipoaviso">Tipo aviso:</label>
+                            <select name="tipoaviso" id="tipoaviso">
+                                    <option value="">---</option>
+                                    <option value="Dispensado">Dispensado</option>
+                                    <option value="Indenizado">Indenizado</option>
+                                    <option value="Trabalhado">Trabalhado</option>
+                            </select>
+                        </div>
+                        <div class="forminput">
+                            <label for="tiporeducao">Redução:</label>
+                            <select name="tiporeducao" id="tiporeducao" disabled>
+                                    <option value="">---</option>
+                                    <option value="2horas">2 horas por dia</option>
+                                    <option value="7dias">7 dias</option>
+                            </select>
+                        </div>
+                        <div class="forminput">
+                            <label for="avisodemissao">Aviso:</label>
+                            <input type="date" name="avisodemissao" id="avisodemissao">
+                        </div>
+                        <div class="forminput">
+                            <label for="datademissao">Data de Demissão:</label>
+                            <input type="date" name="datademissao" id="datademissao">
+                        </div>
+                        <label for="observacarescisao">Observação:</label>
+                        <textarea  class="observacao_form" name="observacaorescisao" id="observacaorescisao" cols="30" rows="10"></textarea>
+                        <button class="btn btn-red" type="submit">Gravar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+            <button class="btn btn-yellow" onclick="mostrar(this)">Cancelar</button>
+            <div class="formdisplay hidden">
+                <div>
+                    <div class="forminput_barra">
+                        <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="formgroup">
+                        <form method="post" style="display: inline-block;">
+                            {% csrf_token %}
+                            <input type="hidden" id="cancelarrescisao" name="cancelarrescisao" value="{{ func.cod }}">
+                            <label for="observacaocancelamento">Observação:</label>
+                            <textarea  class="observacao_form" name="observacaocancelamento" id="observacaocancelamento" cols="30" rows="10"></textarea>
+                            <button class="btn btn-yellow">Cancelar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <p><span class="titulo">Tipo rescisao:</span> 
+                {{ demissao.tiporescisao }}
+            </p>
+            <p><span class="titulo">Tipo aviso:</span> {{ demissao.tipoaviso }}</p>
+            {% if demissao.aviso %}
+                <p><span class="titulo">Aviso:</span> {{ demissao.aviso|date:"d/m/Y" }}</p>
+                {% if demissao.reducao %}
+                    <p><span class="titulo">Funcionário trabalha até: </span>{{demissao.reducao|date:"d/m/Y"}}</p>
+                {% endif %}
+            {% endif %}
+            <p><span class="titulo">Data da demissão:</span> {{ demissao.final|date:"d/m/Y" }}</p>
+            {% for tramite in demissao.tramite.get_queryset %}
+                <div style="margin: 0.5rem;">
+                    <div style="display: inline-block; padding: 0.3rem;" {% if tramite.finalizado %} class="csuccess observacao" {% else %} class="borda cdanger observacao" {% endif %}>
+                        <span>{{ tramite.nome }}:</span>
+                        {% if tramite.finalizado %}
+                            <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                        {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                        <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <!--demissao_cancelada-->
+        {% if demissao_cancelada %}
+            {% for demissao in demissao_cancelada %}
+                <div class="padding-sm borda">
+                    <p>{{ demissao.aviso|date:"d/m/Y"}}</p>
+                    <p>Data da demissão: {{ demissao.final|date:"d/m/Y" }}</p>
+                    {% for tramite in demissao.tramite.get_queryset %}
+                    <div style="margin: 0.5rem;">
+                        <div style="display: inline-block; padding: 0.3rem;" {% if tramite.finalizado %} class="cwarning observacao" {% else %} class="borda cdanger observacao" {% endif %}>
+                            <span>{{ tramite.nome }}:</span>
+                            {% if tramite.finalizado %}
+                                <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                            {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                            <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- retificar ferias -->
+{% if feriasedit %}
+    <button class="btn-rounded-big btn-green" style="position: fixed; bottom: 0.5rem; right: 0.5rem;" onclick="mostrar(this)"><i class="fa-solid fa-plus"></i></button>
+    <div class="formdisplay">
+        <div>
+            <div class="forminput_barra">
+                <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="formgroup">
+                <form method="post">     
+                    {% csrf_token %}
+                    <input type="hidden" id="funcid" name="funcid" value="{{ func.cod }}">
+                    <input type="hidden" id="periodoinicio" name="periodoinicio" value="{{ diaedit.inicioem|date:'d/m/Y' }}">
+                    <div class="borda padding-sm">
+                        <p>Período Aquisitivo</p>
+                        <p>{{ feriasedit.periodoinicio|date:'d/m/Y' }} - {{ feriasedit.periodofim|date:'d/m/Y' }}</p>
+                    </div>                    
+                    <div class="forminput">
+                        <label for="aviso">Aviso:</label>
+                        <input type="date" name="aviso" id="aviso" value="{{feriasedit.aviso|date:'Y-m-d'}}">
+                    </div>
+                    <div class="forminput">
+                        <label for="inicio">Início:</label>
+                        <input type="date" name="inicio" id="inicio" value="{{feriasedit.inicio|date:'Y-m-d'}}">
+                    </div>
+                    <div class="forminput">
+                        <label for="final">Final:</label>
+                        <input type="date" name="final" id="final" value="{{feriasedit.final|date:'Y-m-d'}}" disabled>
+                    </div>
+                    <button class="btn" type="submit">Gravar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="fundo" onclick="removefundo()"></div>
+{% endif %}
+{% include 'footer.html' %}
+<script src="{% static 'js/funcionarios.js' %}"></script>
+<script src="{% static 'js/processa.js' %}"></script>
+</html>
+
+<!--
+for func in funcs:
+    admissao = func.admissao
+    hoje = date.today()
+    for a in range(2024 - admissao.year):
+        func.ferias_set.create(periodoinicio= admissao + timedelta(days=365*a), periodofim= admissao + timedelta(days=365*(a+1)))
+-->

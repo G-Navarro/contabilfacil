@@ -1,0 +1,197 @@
+{% load static %}
+{% load hash_filters%}
+{% include 'header.html' %}
+{% include 'links.html' %}
+<div class="accordion borda">
+    <div class="accordion-main">
+        <p>Filtros</p>
+    </div>
+    <div class="accordion-content hidden">
+        <div style="margin: 0.5rem; display: flex;align-items: stretch;justify-content: space-between;">
+            <input type="text" class="pesquisafuncl" name="pesquisa_cod" id="pesquisa_cod" placeholder="Código">
+            <input type="text" class="pesquisafuncl" name="pesquisa_nome" id="pesquisa_nome" placeholder="Nome">
+            <input type="date" class="pesquisafuncl" name="pesquisa_admissao" id="pesquisa_admissao" placeholder="Admissao">
+            <input type="text" class="pesquisafuncl" name="pesquisa_cargo" id="pesquisa_cargo" placeholder="Cargo">
+            <input type="text" class="pesquisafuncl" name="pesquisa_salario" id="pesquisa_salario" placeholder="Salário">
+        </div>
+    </div>
+</div>
+
+<div class="abasgrupo">
+    <p class="abasmenu abaativa">Funcionários</p>
+    <p class="abasmenu">Rescisões</p>
+    <p class="abasmenu">Férias</p>    
+    <p class="abasmenu">Lançamentos</p>  
+</div>
+<div class="abas">
+    {% if user.is_superuser %}
+        <div class="accordion borda">
+            <div class="accordion-main flexstart">
+                <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+            </div>
+            <div class="accordion-content hidden">
+                <div id="dragNdrop" class="dragNdrop">
+                    <div>
+                        <form id="uploadarquivo">
+                            <input id="modelo" type="hidden" value="funcionarios">
+                            <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                            <input id="arquivo" name="arquivo" type="file">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if funcs == None %}
+        <p class="borda msg">Nenhum funcionário cadastrado</p>
+    {% else %}
+        {% for func in funcs %}
+                <div class="borda flexbetween padding-sm sombra" style="margin: 0.5rem;">
+                    <div class="cod">
+                        <a href="{% url 'funcionarios' func.cod %}">
+                            <div style="color: #f2f2f2; text-align: center;">
+                                <i class="fa-solid fa-address-card"></i> <span>{{ func.cod }}</span>
+                            </div>
+                        </a>
+                    </div>  
+                    <div class="nome">
+                        <span {% if func.demitido %}style="color:#ff3333" {% endif %}>
+                            <a href="{% url 'funcionarios' func.cod %}">
+                                {{ func.nome }} {% if func.demitido %} - {{ func.demissao|date:"d/m/Y" }}{% endif %}
+                            </a>
+                        </span>
+                    </div>
+                    <div class="admissao">
+                        <span>Admissão: </span><br><span>{{ func.admissao|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="cargo">
+                        <span>Cargo: </span><br><span>{{ func.cargo }}</span>
+                    </div>
+                    <div class="salario">
+                        <span>Salário: </span><br><span>{{ func.salario }}</span>
+                    </div>
+                </div>
+        {% endfor %}
+    {% endif %}
+</div>
+<div class="abas hidden">
+    {% if rescisoes_abertas %}
+    <div class="accordion borda sombra">
+        <div class="accordion-main flexstart">
+            <p>Rescisões</p>
+        </div>
+        <div class="accordion-content" style="max-height: max-content;">
+            {% for demissao in rescisoes_abertas %}
+                <div class="padding-sm borda sombra margin-sm">
+                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+                    <p><span class="titulo">Tipo rescisao:</span> 
+                        {{ demissao.tiporescisao }}
+                    </p>
+                    <p><span class="titulo">Tipo aviso:</span> {{ demissao.tipoaviso }}</p>
+                    {% if demissao.aviso %}
+                        <p><span class="titulo">Aviso:</span> {{ demissao.aviso|date:"d/m/Y" }}</p>
+                        {% if demissao.reducao %}
+                            <p><span class="titulo">Funcionário trabalha até: </span>{{demissao.reducao|date:"d/m/Y"}}</p>
+                        {% endif %}
+                    {% endif %}
+                    <p><span class="titulo">Data da demissão:</span> {{ demissao.final|date:"d/m/Y" }}</p>
+                    {% for tramite in demissao.tramite.get_queryset %}
+                        <div class="observacao margin-sm" style="display: inline-block;">
+                            <span id="{{ tramite.id }}" style="padding: 0.3rem;" {% if tramite.finalizado %} class="csuccess" {% else %} class="borda cdanger" {% endif %} 
+                                {% if tramite.nome != 'Solicitação' %} onclick="tramite(this, '{{demissao.func.emp.cod}}')" {% endif %}>
+                                    <span>{{ tramite.nome }}:</span>
+                                {% if tramite.finalizado %}
+                                    <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                                {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                            </span>
+                            <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% if rescisoes_canceladas %}
+        <div class="accordion borda sombra">
+            <div class="accordion-main flexstart">
+                <p>Rescisões canceladas</p>
+            </div>
+            <div class="accordion-content hidden" style="max-height: max-content;">
+            {% for demissao in rescisoes_canceladas %}
+                <div class="padding-sm borda sombra margin-sm">
+                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+                    <p><span class="titulo">Tipo rescisao:</span> 
+                        {{ demissao.tiporescisao}}
+                    </p>
+                    <p><span class="titulo">Tipo aviso:</span> {{ demissao.tipoaviso }}</p>
+                    {% if demissao.aviso %}
+                        <p><span class="titulo">Aviso:</span> {{ demissao.aviso|date:"d/m/Y" }}</p>
+                        {% if demissao.reducao %}
+                            <p><span class="titulo">Funcionário trabalha até: </span>{{demissao.reducao|date:"d/m/Y"}}</p>
+                        {% endif %}
+                    {% endif %}
+                    <p><span class="titulo">Data da demissão:</span> {{ demissao.final|date:"d/m/Y" }}</p>
+                    {% for tramite in demissao.tramite.get_queryset %}
+                        <div class="observacao margin-sm" style="display: inline-block;">
+                            <span style="padding: 0.3rem;" {% if tramite.finalizado %} class="cwarning" {% else %} class="borda cdanger" {% endif %} {% if user.is_superuser %} onclick="tramite(this)" {% endif %}>
+                                    <span>{{ tramite.nome }}:</span>
+                                {% if tramite.finalizado %}
+                                    <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                                {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                            </span>
+                            <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    </div>
+</div>
+<div class="abas hidden">
+    <div>
+        {% for ferias in feriasaberta %}
+            <div class="padding-sm borda sombra" style="margin: 0.5rem">
+                <p><p class="margin-sm"><a href="{% url 'funcionarios' ferias.func.cod %}" class="btn">{{ ferias.func.cod }}</a> {{ ferias.func.nome }}</p>
+                <p><span class="titulo">Período Aquisitivo:</span> {{ ferias.periodoinicio|date:"d/m/Y" }} - {{ ferias.periodofim|date:"d/m/Y" }}</p>
+                <p><span class="titulo">Dias de direito: </span>{{ ferias.diasdedireito }}</p>
+                <p><span class="titulo">Data máxima para iniciar:</span> {{ ferias.datamaxima|date:"l" }} - {{ ferias.datamaxima|date:"d/m/Y" }}</p>
+                {% with programacao_ferias=ferias.ferias_set.all %}
+                    {%if programacao_ferias %}
+                        {% for tramite in programacao_ferias.tramite.get_queryset %}
+                            <div class="observacao margin-sm" style="display: inline-block;">
+                                <span style="padding: 0.3rem;" {% if tramite.finalizado %} class="cwarning " {% else %} class="borda cdanger" {% endif %}  onclick="tramite(this)">
+                                        <span>{{ tramite.nome }}:</span>
+                                    {% if tramite.finalizado %}
+                                        <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                                    {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                                </span>
+                                <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="abas hidden">
+    {% for func in lancamentos %}
+        <div class="padding-sm borda sombra" style="margin: 0.5rem">
+            <p class="margin-sm"><a href="{% url 'funcionarios' func.cod %}" class="btn">{{ func.cod }}</a> {{ func.nome }}</p>
+            {% with lancamento=func.lancamento_set.all|soma_lancamentos:ua %}
+                {% for nome, valor in lancamento.items %}
+                    <p>{{ nome }} = {{ valor|calcula_minuto }}</p>
+                {% endfor %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+</div>
+{% include 'footer.html' %}
+<script src="{% static 'js/funcionarios.js' %}"></script>
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

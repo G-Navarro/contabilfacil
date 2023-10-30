@@ -21,8 +21,11 @@
 {% if notas == None %}
     <p class="borda msg">Nenhuma nota cadastrada</p>
 {% else %}
+<div class="abasgrupo">
+    <a class="abasmenu" href="{% url 'alocacoes' 0 %}">Alocações</a>
+</div>
 <br>
-<p style="margin-left: 1rem;">Total: {{ total|floatformat:2 }} | INSS: {{ inss|floatformat:2 }} | ISS: {{ iss }}</p>
+<p style="margin-left: 1rem;">Total: R$ {{ total|floatformat:2 }} | INSS: R$ {{ inss|floatformat:2 }} | ISS: R$ {{ iss }}</p>
 <br>
 
 <div class="accordion borda">
@@ -42,10 +45,10 @@
     <div class="accordion borda">
         <div class="accordion-main flexstart">
                 <a href="{% url 'notas' %}?id={{ nota.id }}">
-                    <div class="btnbig b_right"><i class="fa-solid fa-file-invoice"></i> Nota: {{ nota.numero }}</div>
+                    <div class="btnbig b_right"><i class="fa-solid fa-file-invoice"></i> <span {% if nota.canc == 1 %} style="color: #ff3333;" {% endif %}>Nota: {{ nota.numero }}</span></div>
                 </a>
                 <a href="{% url 'obras' nota.tomador.id %}">
-                    <div class="btnbig b_right"><i class="fa-solid fa-trowel-bricks"></i> Obra: {{ nota.tomador.cod }}</div>
+                    <div class="btnbig b_right" {% if nota.tomador.cod == None %}style="color: #ffe666;"{% elif nota.canc == 1 %} style="color: #ff3333;" {% endif %}><i class="fa-solid fa-trowel-bricks"></i> Obra: {{ nota.tomador.cod }}</div>
                 </a>
             <p  {% if nota.canc == 1 %} style="color: #ff3333;" {% endif %}>{{ nota.tomador.nome }}
                         {% if nota.tomador.cno != None %}
@@ -67,3 +70,5 @@
 {% include 'footer.html' %}
 <script src="{% static 'js/processa.js' %}"></script>
 </html>
+
+

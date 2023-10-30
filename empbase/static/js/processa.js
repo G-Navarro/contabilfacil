@@ -15,6 +15,9 @@ divdropArea.on("dragleave", function(event) {
 });
 
 processaarquivo = () => {
+    loading = converthtml("<div id=blackout><span class='loader'></span></div>")
+    $('body').append(loading)
+    divdropArea.append(loading)
     inputfile = $('#arquivo')
     inputfile = inputfile[0].files[0]
     form = new FormData();
@@ -23,6 +26,17 @@ processaarquivo = () => {
 
     url='/cadastrar'
     $.post({url, headers: {'X-CSRFToken': csrftoken}, data: form, processData: false, contentType: false,
+    success: (res)=>{
+        if(res['msg'] == 'sucesso'){
+            location.reload()
+        }
+    }, error: (res)=>{
+        console.log(res)
+    }})
+}
+
+deleta_imposto = (id) => {
+    $.post({url: '/tarefas', headers: {'X-CSRFToken': csrftoken}, data: {'deletar': id }, 
     success: (res)=>{
         if(res['msg'] == 'sucesso'){
             location.reload()

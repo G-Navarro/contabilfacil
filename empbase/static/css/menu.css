@@ -1,0 +1,133 @@
+#links{
+    color: #f2f2f2;
+    margin-bottom: 0.5rem;
+    padding: 0.9rem 0.3rem;
+}
+
+#links a{
+    padding: 0.5rem 0.3rem;
+    color: #f2f2f2;
+    border-radius: 4px;
+}
+
+#links a:hover{
+    background-color: #f2f2f2;
+    color: #212529;
+}
+
+.links_fix{
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+.links_padrao{
+    color: #f2f2f2;
+    border: 1px solid #f2f2f2;
+    padding: 0.2rem;
+    border-radius: 3px;
+    box-shadow: 0 0 1px;
+    margin-bottom: 0.5rem;
+}
+
+.links_padrao:hover{
+    background-color: #f2f2f2;
+    color: #212529;
+}
+
+.links_padrao:visited{
+    color: #f2f2f2;
+}
+
+#logout{
+    display: inline-block;
+    float: right;
+}
+
+#logout a{
+    padding: 0.5rem 0.3rem;
+    border-radius: 4px;
+    color: #19376D;
+    background-color: #f2f2f2;
+    border: 1px solid #f2f2f2;
+    border-radius: 3px;
+}
+
+#logout a:hover{
+    border: 1px solid #19376D;
+}
+
+#linksbig{
+    display: inline-block;
+    width: 100%;
+}
+
+#linkssmall{
+    display: none;
+}
+
+#competencia{
+    display: none;
+    position: absolute;
+    padding: 0.5rem;
+    margin: 0.7rem;
+    background-color: #484e51;
+    border: 1px solid #f2f2f2;
+    border-radius: 4px;
+    z-index: 3;
+}
+
+
+#pesquisa{
+    display: inline-block;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+#resultado_pesquisa{
+    display: none;
+    position: absolute;
+    background-color: #484e51;
+    max-width: 20rem;
+    max-height: 21rem;
+    overflow-y: scroll;
+    margin: 0.5rem 0 0 0.5rem;
+}
+
+#resultado_pesquisa a{
+    display: inline-block;
+    width: 100%;
+    padding: 0.75rem;
+    color: #f1f1f1;
+    list-style: none;
+}
+
+#resultado_pesquisa a:hover{
+    color: #19376d;
+    background-color: #f1f1f1;
+}
+
+@media (max-width: 810px) {
+    #linksbig{
+        display: none;
+    }
+
+    #linkssmall{
+        display: inline-block;
+        width: 100%;
+    }
+    
+    #conteudomenu{
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 13rem;
+        z-index: 2;
+    }
+
+    #conteudomenu a{
+        display: block;
+    }
+}

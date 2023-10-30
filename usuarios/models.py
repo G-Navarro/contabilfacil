@@ -34,16 +34,22 @@ class UsuarioManager(BaseUserManager):
     def create_supervisor(self, email, fone, usuario, nome, snome, password, **other_fields):
         other_fields.setdefault('eh_supervisor', True)
         return self.create_user(email, fone, usuario, nome, snome, password, **other_fields)
+
+    #GERENTE É O RESPONSAVEL POR UMA OU MAIS EMPRESAS
+    def create_gerente(self, email, fone, usuario, nome, snome, password, **other_fields):
+        other_fields.setdefault('eh_gerente', True)
+        return self.create_user(email, fone, usuario, nome, snome, password, **other_fields)    
     
     #AUXILIAR DO GERENTE DE ALGUMA EMPRESA
     def create_auxiliar(self, email, fone, usuario, nome, snome, password, **other_fields):
         other_fields.setdefault('eh_auxiliar', True)
         return self.create_user(email, fone, usuario, nome, snome, password, **other_fields)
-
-    #GERENTE É O RESPONSAVEL POR UMA OU MAIS EMPRESAS
-    def create_gerente(self, email, fone, usuario, nome, snome, password, **other_fields):
-        other_fields.setdefault('eh_gerente', True)
+    
+    #PERMITE FUNCIONARIO MARCAR PONTO
+    def create_funcionario(self, usuario, nome, snome, password, email=None, fone=None, **other_fields):
+        other_fields.setdefault('eh_funcionario', True)
         return self.create_user(email, fone, usuario, nome, snome, password, **other_fields)
+
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
@@ -55,6 +61,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     eh_supervisor = models.BooleanField(default=False)
     eh_gerente = models.BooleanField(default=False)
     eh_auxiliar = models.BooleanField(default=False)
+    eh_funcionario = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)

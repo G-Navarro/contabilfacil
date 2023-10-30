@@ -1,0 +1,141 @@
+{% load static %}
+{% include 'header.html' %}
+{% include 'links.html' %}
+<div class="abasgrupo">
+    <p class="abasmenu {% if adiantamento %}abaativa{% endif %}">Adiantamento</p>
+    <p class="abasmenu {% if not adiantamento %}abaativa{% endif %}">Folha Mensal</p>
+    {% if adiantamento13  %}
+        <p class="abasmenu">Adiantamento 13º</p>
+    {% endif %}
+    {% if pagamento13  %}
+        <p class="abasmenu">Folha Mensal 13º</p>
+    {% endif %}
+</div>
+
+<!-- aba de filtros -->
+<div id="filtros" style="padding: 0.5rem 0.7rem;">
+    <input id="pesquisaempresa" type="text" placeholder="Pesquisar...">
+</div>
+
+<div {% if adiantamento %}class="abas"{% else %}class="abas hidden"{% endif %}>
+    <!-- aba de adiantamento dos funcionarios -->
+    <div style="margin: 0 auto; max-width: 85rem; display: flex; flex-wrap: wrap;">
+        {% for pagamento in adiantamento %}
+            <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                    <span>Pago:</span>
+                    {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                     
+                </div>
+            </div>
+        {% endfor %}
+        
+        {% for pagamento in adiantamento_pago %}
+            <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                    <span>Pago:</span>
+                    {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
+                    <span class="observacao_show">{{pagamento.atualizado|date:"d/m/Y"}}</span> 
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div {% if not adiantamento %}class="abas"{% else %}class="abas hidden"{% endif %}>
+    <!-- aba de folha mensal dos funcionarios -->
+    <div style="margin: 0 auto; max-width: 85rem; display: flex; flex-wrap: wrap;">
+        {% for pagamento in folha_mensal %}
+            <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                    <span>Pago:</span>
+                    {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
+                </div>
+            </div>
+        {% endfor %}
+        {% for pagamento in folha_mensal_pago %}
+            <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                    <span>Pago:</span>
+                    {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
+                    <span class="observacao_show">{{pagamento.atualizado|date:"d/m/Y"}}</span> 
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if adiantamento13 %}
+    <div class="abas hidden">
+        <!-- aba de adiantamento dos funcionarios -->
+        <div style="margin: 0 auto; max-width: 85rem; display: flex; flex-wrap: wrap;">
+            {% for pagamento in adiantamento13.funcs.get_queryset%}
+                <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                    <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                    <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                        <span>Pago:</span>
+                        {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% if pagamento13  %}
+<div class="abas hidden">
+    <!-- aba de adiantamento dos funcionarios -->
+    <div style="margin: 0 auto; max-width: 85rem; display: flex; flex-wrap: wrap;">
+        {% for pagamento in pagamento13.funcs.get_queryset%}
+            <div class="borda padding-sm empresas" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+                <p style="text-align: center;">{{ pagamento.func.nome }}</p>
+                <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                    <span>Pago:</span>
+                    {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pesquisaempresa').focus();
+    
+        var empref = window.location.search.substring(1);
+        if (empref) {
+            empref = empref.split('=')[1]; // Remove the '#' character
+            
+            var targetElement = document.getElementById(empref);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 150,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    });
+    document.getElementById('pesquisaempresa').addEventListener('input', function() {
+        var inputText = this.value.toLowerCase();
+        var bordaElements = document.getElementsByClassName('empresas');
+
+        for (var i = 0; i < bordaElements.length; i++) {
+            var pElement = bordaElements[i].querySelector('p');
+            var pText = pElement.innerText.toLowerCase();
+
+            if (pText.includes(inputText)) {
+                bordaElements[i].style.display = 'flex';
+            } else {
+                bordaElements[i].style.display = 'none';
+            }
+        }
+    });
+</script>
+{% include 'footer.html' %}
+<script src="{% static 'js/funcionarios.js' %}"></script>
+<script src="{% static 'js/processa.js' %}"></script>
+</html>

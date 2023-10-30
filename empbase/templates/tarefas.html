@@ -20,17 +20,55 @@
         </div>
     </div>
 {% endif %}
-
 <div class="abasgrupo">
-    {% if user.is_superuser or user.eh_supervisor %}
-        <p class="abasmenu abaativa">Impostos</p><p class="abasmenu">Holerite</p>
-    {% endif %}
-    {% for pg in fpagamento %}
-        <p class="abasmenu">{{ pg.tipo|lower|capfirst }}</p>
-    {% endfor %}
+        <p class="abasmenu abaativa">Impostos</p>
+        <p class="abasmenu">Holerite</p>
+        <p class="abasmenu">Rescisões</p>
+        <p class="abasmenu">Férias</p>
 </div>
+
+<!-- aba de filtros -->
+<div id="filtros" style="padding: 0.5rem 0.7rem;">
+    <input id="pesquisaempresa" type="text" placeholder="Pesquisar...">
+</div>
+
 <!-- aba de impostos-->
 <div class="abas">
+{% if imp_edit %}
+    <button class="btn-rounded-big btn-green" style="position: fixed; bottom: 4.5rem; right: 0.5rem;" onclick="mostrar(this)"><i class="fa-solid fa-pen-to-square"></i></button>
+    <div class="formdisplay">
+        <div>
+            <div class="forminput_barra">
+                <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="formgroup">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="editid" id="editid" value="{{ imp_edit.id }}">
+                    <div class="forminput">
+                        <label for="editimpemp">Empresa: </label>
+                        <input name="editimpemp" id="editimpemp" disabled value="{{ imp_edit.emp.nome }}">
+                    </div>
+                    <div class="forminput">
+                        <label for="editimpnome">Imposto: </label>
+                        <input type="text" name="editimpnome" id="editimpnome" value="{{ imp_edit.nome }}"  oninput="upperCase(this)">
+                    </div>
+                    <div class="forminput">
+                        <label for="editimpvalor">Valor:</label>
+                        <input type="text" name="editimpvalor" id="editimpvalor" value="{{ imp_edit.valor }}"  oninput="formatInputValue(this)">
+                    </div>
+                    <div class="forminput">
+                        <label for="editimpvcto">Vencimento:</label>
+                        <input type="date" name="editimpvcto" id="editimpvcto" value="{{ imp_edit.vcto }}">
+                    </div>
+                    <button class="btn" type="submit">Editar</button>
+                </form>
+                    <button id="{{ imp_edit.id }}" class="btn btn-red" onclick="deleta_imposto(this.id)">Deletar</button>
+            </div>
+        </div>
+    </div>
+    <div id="fundo"></div>
+{% endif %}
 <button class="btn-rounded-big btn-green" style="position: fixed; bottom: 0.5rem; right: 0.5rem;" onclick="mostrar(this)"><i class="fa-solid fa-plus"></i></button>
 <div class="formdisplay hidden">
     <div>
@@ -38,7 +76,8 @@
             <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="formgroup">
-            <form>
+            <form method="post">                
+                {% csrf_token %}
                 <div class="forminput">
                     <label for="empresa">Empresa: </label>
                     <select name="empresa" id="empresa">
@@ -50,34 +89,30 @@
                 </div>
                 <div class="forminput">
                     <label for="nomeimposto">Imposto: </label>
-                    <input type="text" name="nomeimposto" id="nomeimposto">
+                    <input type="text" name="nomeimposto" id="nomeimposto" oninput="upperCase(this)">
                 </div>
                 <div class="forminput">
                     <label for="valorimposto">Valor:</label>
-                    <input type="text" name="valorimposto" id="valorimposto">
-                </div>
-                <div class="forminput">
-                    <label for="compimposto">Competência:</label>
-                    <input type="text" name="compimposto" id="compimposto">
+                    <input type="text" name="valorimposto" id="valorimposto"  oninput="formatInputValue(this)">
                 </div>
                 <div class="forminput">
                     <label for="vctoimposto">Vencimento:</label>
                     <input type="date" name="vctoimposto" id="vctoimposto">
                 </div>
+                <button class="btn" type="submit">Adcionar <i class="fa-solid fa-plus"></i></button>
             </form>
-            <button class="btn">Adcionar <i class="fa-solid fa-plus"></i></button>
         </div>
     </div>
 </div>
 {% for emp in imposto %}
     {% with imp=emp.imposto_set.all|dictsort:'nome' %}
-        <div class="" style="margin: 0.5rem; border-left: 4px solid #939b9f">
+        <div id="{{ emp.cod }}" class="empresas" style="margin: 0.5rem; border-left: 4px solid #939b9f">
             <p style="margin: 0.3rem;">{{ emp.cod }} - {{ emp.nome }}</p>
             <div class="flexstart">
                 {% for imp in imp %}
                     {% if imp.comp == ua.comp %}
-                        <div class="borda" style="padding: 0.3rem; margin: 0.5rem;">
-                            <p>{{ imp.nome }}</p>
+                        <div class="borda sombra" style="padding: 0.3rem; margin: 0.5rem;">
+                            <a href="{% url 'tarefas' %}?impid={{ imp.id }}"><p class="links_padrao">{{ imp.nome }}</p></a>
                             <p>Competência: {{ imp.comp.month }}/{{ imp.comp.year }} </p>
                             <p>R$ {{ imp.valor }}</p>
                             <p>VCTO: {{ imp.vcto|date:"d/m/Y" }}</p>   
@@ -92,44 +127,124 @@
     {% endwith %}
 {% endfor %}
 </div>
-    <!-- aba de holerite-->
+
+<!-- aba de holerite-->
 <div class="abas hidden">
-    {% for emp in holerite %}
-        <div class="borda" style="margin: 0.5rem;">
+    {% for emp in holerites %}
+        <div class="borda empresas" style="margin: 0.5rem;">
             <p style="margin: 0.3rem;">{{ emp.cod }} - {{ emp.nome }}</p>
             <div class="flexstart">
                 {% for holerite in emp.holerite_set.all %}
                     {% if holerite.comp == ua.comp %}
-                                <div class="borda" style="padding: 0.3rem; margin: 0.5rem;">
-                                    <p class="padding-sm">{{ holerite.tipo }}</p>
-                                    <p>Competência: {{holerite.comp.month}}/{{holerite.comp.year}}</p>
-                                    <div {% if holerite.enviado == True %} class="confere csuccess" {% else %} class="confere borda cdanger" {% endif %} id="{{ holerite.id }}" onclick="holerite(this)">
-                                        <span>Status: </span>{% if holerite.enviado == True %} <i class="fa-solid fa-check"></i> {% else %} <i class="fa-regular fa-paper-plane"></i> {% endif %}</i>
-                                    </div> 
-                                </div>
+                            <div class="borda sombra" style="padding: 0.3rem; margin: 0.5rem;">
+                                <p class="padding-sm">{{ holerite.tipo }}</p>
+                                <p>Competência: {{holerite.comp.month}}/{{holerite.comp.year}}</p>
+                                <div {% if holerite.enviado == True %} class="confere csuccess" {% else %} class="confere borda cdanger" {% endif %} id="{{ holerite.id }}" onclick="holerite(this)">
+                                    <span>Status: </span>{% if holerite.enviado == True %} <i class="fa-solid fa-check"></i> {% else %} <i class="fa-regular fa-paper-plane"></i> {% endif %}</i>
+                                </div> 
+                            </div>
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
     {% endfor %}
 </div>
-    <!-- aba de pagamento dos funcionarios -->
-    {% for pg in fpagamento %}
-        {% with funcs=pg.funcs.get_queryset %}
-            <div class="abas hidden" style="margin: 0 auto; max-width: 85rem; display: flex; flex-wrap: wrap;">
-                {% for funpg in funcs|dictsort:"func.nome" %}
-                <div class="borda padding-sm" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
-                    <p style="text-align: center;">{{ funpg.func.nome }}</p>
-                    <div {% if funpg.pago == True %} class="confere csuccess" {% else %} class="confere borda cdanger" {% endif %} id="{{ funpg.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
-                        <span>Pago:</span>
-                        {% if funpg.pago == True %} <i class="fa-solid fa-hand-holding-dollar"></i> {% else %} <i class="fa-solid fa-money-check-dollar"></i> {% endif %}                        
-                    </div>
+
+<div class="abas hidden">
+    {% for demissao in rescisoes %}
+        <div class="padding-sm borda sombra margin-sm">
+            <p class="margin-sm">{{ demissao.func.emp }}</p>
+            <p  style="margin: 1rem 0;"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+            <p><span class="titulo">Tipo rescisao:</span>    
+                {{ demissao.tiporescisao }}
+            </p>
+            <p><span class="titulo">Tipo aviso:</span> {{ demissao.tipoaviso }}</p>
+            {% if demissao.aviso %}
+                <p><span class="titulo">Aviso:</span> {{ demissao.aviso|date:"d/m/Y" }}</p>
+                {% if demissao.reducao %}
+                    <p><span class="titulo">Funcionário trabalha até: </span>{{demissao.reducao|date:"d/m/Y"}}</p>
+                {% endif %}
+            {% endif %}
+            <p><span class="titulo">Data da demissão:</span> {{ demissao.final|date:"d/m/Y" }}</p>
+            {% for tramite in demissao.tramite.get_queryset %}
+                <div class="observacao margin-sm" style="display: inline-block;">
+                    <span id="{{ tramite.id }}" style="padding: 0.3rem;" {% if tramite.finalizado %} class="csuccess" {% else %} class="borda cdanger" {% endif %} 
+                        {% if tramite.nome != 'Solicitação' and user.is_superuser %} onclick="tramite(this, '{{demissao.func.emp.cod}}')" {% endif %}>
+                            <span>{{ tramite.nome }}:</span>
+                        {% if tramite.finalizado %}
+                            <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                        {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                    </span>
+                    <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
                 </div>
-                {% endfor %}
-            </div>
-            {% endwith %}
+            {% endfor %}
+        </div>
     {% endfor %}
 </div>
+
+<div class="abas hidden">
+    {% for periodo_aq in ferias %}
+        <div class="borda padding-sm margin-sm">
+            <p class="margin-sm"></p> {{ periodo_aq.func.emp }}</p>
+            <p style="margin: 1rem 0;"><a href="{% url 'funcionarios' periodo_aq.func.cod %}" class="btn">{{ periodo_aq.func.cod }}</a> {{ periodo_aq.func.nome }}</p>
+            <div class="borda padding-sm" style="text-align: center;">
+                <p><span class="titulo">Período Aquisitivo</span></p>
+                <p> {{ periodo_aq.periodoinicio|date:"d/m/Y" }} - {{ periodo_aq.periodofim|date:"d/m/Y" }}</p>
+            </div>
+            {% with ferias=periodo_aq.ferias_set.all %}
+                {% for ferias in ferias %}
+                    <p><span class="titulo">Inicio:</span> {{ ferias.inicio|date:"d/m/Y" }} - <span class="titulo">Fim:</span> {{ ferias.final|date:"d/m/Y" }}</p>
+                    {% for tramite in ferias.tramite.get_queryset %}
+                    <div class="observacao margin-sm" style="display: inline-block;">
+                        <span id="{{ tramite.id }}" style="padding: 0.3rem;" {% if tramite.finalizado %} class="csuccess" {% else %} class="borda cdanger" {% endif %} 
+                            {% if tramite.nome != 'Solicitação' and user.is_superuser %} onclick="tramite(this, '{{periodo_aq.func.emp.cod}}')" {% endif %}>
+                                <span>{{ tramite.nome }}:</span>
+                            {% if tramite.finalizado %}
+                                <i class="fa-solid fa-check"></i> {% else %} <i class="fa-solid fa-xmark"></i> 
+                            {% endif %} {% if tramite.usuario %} | {{ tramite.usuario }} {{ tramite.usuario.snome }} {% endif %}
+                        </span>
+                        <span class="observacao_show">{{tramite.criado|date:"d/m/y"}} {% if tramite.datafinalizado %}| {{tramite.datafinalizado|date:"d/m/y"}}{% endif %}</span>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pesquisaempresa').focus();
+    
+        var empref = window.location.search.substring(1);
+        if (empref) {
+            empref = empref.split('=')[1]; // Remove the '#' character
+            
+            var targetElement = document.getElementById(empref);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 150,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    });
+    document.getElementById('pesquisaempresa').addEventListener('input', function() {
+        var inputText = this.value.toLowerCase();
+        var bordaElements = document.getElementsByClassName('empresas');
+
+        for (var i = 0; i < bordaElements.length; i++) {
+            var pElement = bordaElements[i].querySelector('p');
+            var pText = pElement.innerText.toLowerCase();
+
+            if (pText.includes(inputText)) {
+                bordaElements[i].style.display = 'block';
+            } else {
+                bordaElements[i].style.display = 'none';
+            }
+        }
+    });
+</script>
 {% include 'footer.html' %}
 <script src="{% static 'js/processa.js' %}"></script>
 </html>

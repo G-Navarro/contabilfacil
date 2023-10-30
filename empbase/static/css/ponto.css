@@ -1,20 +1,88 @@
 #tabelaponto {
-    margin-top: 1rem;
+    margin: 1rem auto 0 auto;
     border-collapse: collapse;
     font-size: 1.2rem;
 }
 
 #tabelaponto th,
 #tabelaponto td {
-  border: 1px solid #f1f1f1;
+  border: 1px solid #121212;
   text-align: center;
   width: 3rem;
+  padding: 0.25rem;
+}
+
+.nome{
+  color: #e4e6e7;
+}
+
+.nome:hover{
+  color: #0051ff;
+}
+
+.diainicio{
+  background-color: #cfcfcf;
+}
+
+.diainicio:hover{
+  background-color: #2e3238;  
+}
+
+.diainicio a{
+  color: #2e3238;
+  display: block;
+  width: 100%;
+}
+
+.diainicio:hover a{
+  color: #e4e6e7;
+}
+/**/
+
+.diaencerrado{
+  background-color: #2459a9;
+}
+
+.diaencerrado:hover{
+  background-color: #cfcfcf;  
+}
+
+.diaencerrado a{
+  color: #e4e6e7;
+  display: block;
+  width: 100%;
+}
+
+.diaencerrado:hover a{
+  color: #2459a9;
+}
+
+.forminputponto{
+    margin: 0.8rem 0;
+}
+
+.forminputponto label{
+    color: #ff1d1d;
+}
+
+.forminputponto > div{
+  display: flex;
+}
+
+.forminputponto .btn{
+  margin-left: 0.5rem;
 }
 
 #tabelaponto th:not(:first-child),
 #tabelaponto td:not(:first-child) {
   width: 5.5rem;
 }
+
+tbody tr:nth-child(even){
+  background:#2e3238;}
+
+tbody tr:nth-child(odd){
+  background:#757575;}
 
 #marcadorponto div{
     display: inline-block;
@@ -24,21 +92,4 @@
     display: block;
     width: 7rem;
     margin: 0.2rem 0;
-}
-
-.botao_seta{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f2f2f2;
-  height: 2rem;
-  width: 2rem;
-  border: 2px solid #f2f2f2;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.botao_seta:hover{
-  background-color: #303436;
-  color: #f2f2f2;
 }

@@ -68,14 +68,20 @@ addaloc = (obj, funcid, obraid) => {
     removedados()
     $.get({url:'/alocacao_edit', data:{'tipo': 'cadastrar', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
-        funcobj = converthtml(
-        `<div>
-            <span>${res['cod']} - ${res['nome']}</span><button onclick='deletaaloc(this, ${res['id']}, ${obraid})'>Remover</button>
-        </div>`
-        )
-        document.getElementById(`${obraid}`).value = ''
-        document.getElementById(`${obraid}`).focus()
-        $(prev).after(funcobj)
+        if(res['msg']){
+            showmsg(res['msg'])
+            document.getElementById(`${obraid}`).value = ''
+            document.getElementById(`${obraid}`).focus()
+        } else{
+            funcobj = converthtml(
+            `<div>
+                <span>${res['cod']} - ${res['nome']}</span><button onclick='deletaaloc(this, ${res['id']}, ${obraid})'><i class="fa-regular fa-circle-xmark"></i></button>
+            </div>`
+            )
+            document.getElementById(`${obraid}`).value = ''
+            document.getElementById(`${obraid}`).focus()
+            $(prev).after(funcobj)
+        }
     }, error: (res) => {
         console.log(res)
     }})
@@ -91,6 +97,7 @@ deletaaloc = (obj, funcid, obraid) => {
         console.log(res)
     }})
 }
+
 
 mudaobra = (obj, idobra) => {
     idnota = $('#id').val()
@@ -113,3 +120,20 @@ $(".hover").on('click', function(event){
     event.stopImmediatePropagation()
     console.log('ola')
 })
+
+semalocacao = ()=> {
+    content = $('.accordion-content')
+    console.log(content)
+    for(a of content){
+        a = $(a).find('p')
+        if(!a.innerText == 'Nenhuma alocação cadastrada'){
+            acc = $(a).parent().parent().parent()
+            if (acc.hasClass('hidden')){
+                acc.removeClass('hidden') 
+            } else {
+                acc.addClass('hidden')  
+            }   
+        } else {      
+        }
+    }
+}

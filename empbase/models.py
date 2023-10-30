@@ -1,13 +1,22 @@
+from datetime import datetime, timedelta
 from django.db import models
 from usuarios.models import Usuario
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
 class Base(models.Model):
-    criado = models.DateField(auto_now_add=True)
-    atualizado = models.DateField(auto_now=True)
-    ativa = models.BooleanField(default=True)
+    criado = models.DateField(auto_now_add=True, null=True, blank=True)
+    atualizado = models.DateField(auto_now=True, null=True, blank=True)
+    ativa = models.BooleanField(default=True, null=True, blank=True)
     usuario = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, blank=True)
+
+
+class Tramites(Base):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    nome = models.CharField(max_length=100)
+    finalizado = models.BooleanField(default=False)
+    datafinalizado = models.DateField(null=True, blank=True)
+    observacao = models.TextField(null=True, blank=True)
 
 
 class Contribuintes(Base):
@@ -16,7 +25,7 @@ class Contribuintes(Base):
     def __str__(self):
         return f'{self.nome}'
 
-class Escritorio(Base):
+class Escritorio(models.Model):
     cnpj = models.CharField(max_length=30, unique=True, null=True, blank=True)
     inscest = models.CharField(max_length=30, blank=True, null=True)
     inscmun = models.CharField(max_length=30, blank=True, null=True)
@@ -44,7 +53,7 @@ class Escritorio(Base):
 
 
 class Empresa(Base):
-    cod = models.IntegerField(primary_key=True)
+    cod = models.IntegerField(unique=True)
     cnpj = models.CharField(max_length=30, unique=True)
     inscest = models.CharField(max_length=30, blank=True, null=True)
     inscmun = models.CharField(max_length=30, blank=True, null=True)
@@ -68,6 +77,7 @@ class Empresa(Base):
     responsavel = models.ForeignKey(Contribuintes, blank=True, null=True, on_delete=models.DO_NOTHING)
     situacao = models.CharField(max_length=20, default='Ativa')
     formaenvio = models.CharField(max_length=5, default='2')
+    paga_vr = models.BooleanField(default=False)
     exonera_folha = models.BooleanField(default=False)
     escr = models.ForeignKey(Escritorio, on_delete=models.DO_NOTHING)
 
@@ -76,6 +86,11 @@ class Empresa(Base):
 
 
 class Turno(Base):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    semana = models.IntegerField(default=8)
+    intervalosemana = models.IntegerField(default=1)
+    fsemana = models.IntegerField(default=4)
+    intervalofsemana = models.IntegerField(default=0)
     entrada = models.CharField(max_length=5, default='08:00')
     intervalo = models.CharField(max_length=5, default='12:00')
     fimintervalo = models.CharField(max_length=5, default='13:00')
@@ -84,9 +99,22 @@ class Turno(Base):
     intervalofs = models.CharField(max_length=5, blank=True, null=True)
     fimintervalofs = models.CharField(max_length=5, blank=True, null=True)
     saidafs = models.CharField(max_length=5, default='12:00')
+    diafolga = models.IntegerField(default=0, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.entrada} - {self.intervalo} - {self.fimintervalo} - {self.saida}'
+
+class ValeTransporte(Base):
+    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING, null=True, blank=True)
+    nome = models.CharField(max_length=100, default='Hortolândia')
+    valor = models.FloatField(default= 5.25)
+
+    def __str__(self):
+        return f'{self.nome} - {str(self.valor)}'
 
 
 class Funcionario(Base):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     cod = models.IntegerField()
     nome = models.CharField(max_length=150)
     cpf = models.CharField(max_length=14)
@@ -94,37 +122,108 @@ class Funcionario(Base):
     admissao = models.DateField()
     salario = models.FloatField(blank=True, null=True)
     cargo = models.CharField(max_length=30)
-    cbo = models.CharField(max_length=8)
+    cbo = models.CharField(max_length=8, default=None)
     rg = models.CharField(max_length=15, blank=True, null=True)
     rgemiss = models.DateField(max_length=5, blank=True, null=True)
     rgorgao = models.CharField(max_length=5, blank=True, null=True)
-    ctps = models.CharField(max_length=10)
-    ctpsserie = models.CharField(max_length=5)
+    ctps = models.CharField(max_length=10, default=None)
+    ctpsserie = models.CharField(max_length=5, default=None)
     ctpsdata = models.DateField(blank=True, null=True)
-    ctpsuf = models.CharField(max_length=2)
+    ctpsuf = models.CharField(max_length=2, default=None)
     jornada = models.ForeignKey(Turno, on_delete=models.DO_NOTHING, default=7352)
-    logradouro = models.CharField(max_length=100)
-    num = models.CharField(max_length=10)
-    bairro = models.CharField(max_length=50)
-    cidade = models.CharField(max_length=70)
-    uf = models.CharField(max_length=2)
-    cep = models.IntegerField()
-    datanasc = models.DateField()
-    cidadenasc = models.CharField(max_length=100)
-    ufnasc = models.CharField(max_length=2)
-    genero = models.CharField(max_length=15)
+    logradouro = models.CharField(max_length=100, default=None)
+    num = models.CharField(max_length=10, default=None)
+    bairro = models.CharField(max_length=50, default=None)
+    cidade = models.CharField(max_length=70, default=None)
+    uf = models.CharField(max_length=2, default=None)
+    cep = models.IntegerField(default=None)
+    datanasc = models.DateField(default=None)
+    cidadenasc = models.CharField(max_length=100, default=None)
+    ufnasc = models.CharField(max_length=2, default=None)
+    genero = models.CharField(max_length=15, default=None)
     pai = models.CharField(max_length=100, blank=True, null=True)
-    mae = models.CharField(max_length=100)
-    demissao = models.DateField(blank=True, null=True)
-    demitido = models.BooleanField()
-    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
+    mae = models.CharField(max_length=100, default=None)
+    vt = models.ForeignKey(ValeTransporte, on_delete=models.DO_NOTHING, null=True, blank=True)
+    demissao = models.DateField(blank=True, null=True, default=None)
+    demitido = models.BooleanField(default=False)
+    funcacesso = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return f'{self.cod} - {self.nome}'
+    
+
+class PeriodoAquisitivo(Base):
+    def datamaxima_calc(self, periodofim):
+        if periodofim.day == 29 and periodofim.month == 2:
+            periodofim = periodofim.replace(day=28)
+        trintadias = periodofim.replace(year=periodofim.year + 1) - timedelta(days=30)
+        datamaxima = trintadias
+        while datamaxima.weekday() > 2:
+            datamaxima -= timedelta(days=1)
+        return datamaxima
+    
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
+    periodoinicio = models.DateField(blank=True, null=True)
+    periodofim = models.DateField(blank=True, null=True)
+    diasdedireito = models.IntegerField(default=30)
+    datamaxima = models.DateField(blank=True, null=True)
+    def __str__(self):
+        return f'{self.func.nome} - {self.periodoinicio} - {self.periodofim}'
+
+
+class Ferias(Base):
+    periodo_aquisitivo = models.ForeignKey(PeriodoAquisitivo, on_delete=models.CASCADE, blank=True, null=True)
+    aviso = models.DateField(blank=True, null=True)
+    inicio = models.DateField(blank=True, null=True)
+    final = models.DateField(blank=True, null=True)
+    tramite = models.ManyToManyField(Tramites)
+
+    def __str__(self):
+        return f'{self.aviso} - {self.inicio}'
+
+
+class Rescisao(Base):
+    class Tipo(models.TextChoices):
+        PED = 'Pedido de Demissão'
+        DSJ = 'Demissão Sem Justa Causa'
+        DCJ = 'Demissão Com Justa Causa'
+        TERM =  'Término de Experiência'
+        TERANT = 'Término de Experiência Antecipado'
+
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
+    tiporescisao = models.CharField(max_length=40, choices=Tipo.choices, blank=True, null=True)
+    tipoaviso = models.CharField(max_length=30, blank=True, null=True)
+    reducao = models.DateField(blank=True, null=True)
+    aviso = models.DateField(blank=True, null=True)
+    final = models.DateField()
+    tramite = models.ManyToManyField(Tramites)
+
+    def __str__(self):
+        return f'{self.func.cod} - {self.tiporescisao} - {self.final}'
+
+class Pagamento(Base):
+    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
+    pago = models.BooleanField(default=False)
+
+
+class Holerite(Base):
+    class Tipo(models.TextChoices):
+        AD = 'ADIANTAMENTO'
+        FM = 'FOLHA MENSAL'
+        AD13 = 'ADIANTAMENTO 13º'
+        FM13 = 'PAGAMENTO 13º'
+
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    tipo = models.CharField(max_length=18, choices=Tipo.choices)
+    comp = models.DateField()
+    enviado = models.BooleanField(default=False)
+    funcs = models.ManyToManyField(Pagamento)
 
 
 class Obras(Base):
-    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     cod = models.IntegerField(null=True, blank=True)
     cnpj = models.CharField(max_length=30, null=True, blank=True)
     cno = models.CharField(max_length=30, null=True, blank=True)
@@ -140,68 +239,45 @@ class Obras(Base):
         return f'{self.cod} - {self.nome}'
 
 
+class DiaDeTrabalho(Base):
+    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
+    inicioem = models.DateField(null=True, blank=True)
+    entrou = models.BooleanField(default=False)
+    encerrado = models.BooleanField(default=False)
+    entrada = models.DateTimeField(null=True, blank=True)
+    intervalo = models.DateTimeField(null=True, blank=True)
+    fimintervalo = models.DateTimeField(null=True, blank=True)
+    saida = models.DateTimeField(null=True, blank=True)
+    horastrabalhadas = models.IntegerField(default=0)
+    retificar = models.BooleanField(default=False)
+    observacao = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.func.cod} - {self.func.nome} | {self.inicioem}'
+
+
 class Rubrica(models.Model):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=100)
-    cod = models.IntegerField(unique=True)
+    cod = models.IntegerField()
 
     def __str__(self):
         return self.name
 
 
-class Lancamento(models.Model):
+class Lancamento(Base):
     rub = models.ForeignKey(Rubrica, on_delete=models.CASCADE)
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    valor = models.DecimalField(max_digits=10, decimal_places=2)
-    comp = models.CharField(max_length=7)  # Format: 'YYYY-MM' (e.g., '2023-07')
+    valor = models.FloatField(default=0)
+    comp = models.DateField()
+    diatrabalhado = models.ForeignKey(DiaDeTrabalho, on_delete=models.DO_NOTHING, null=True, blank=True)
 
-
-class DiadeTrabalho(Base):
-    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    entrou = models.BooleanField(default=False)
-    inicioem = models.DateField()
-    entrada = models.DateTimeField()
-    intervalo = models.DateTimeField()
-    fimintervalo = models.DateTimeField()
-    saida = models.DateTimeField()
-    encerrado = models.BooleanField(default=False)
-
-
-class Ferias(Base):
-    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    aviso = models.DateField(blank=True, null=True)
-    inicio = models.DateField()
-    final = models.DateField()
-
-
-class Rescisao(Base):
-    PTRA = '1'
-    PIND = '2'
-    DIND = '3'
-    DTRA = '4'
-    TEXP = '5'
-    TEXPANT = '6'
-    TEXPANTEMP = '7'
-    JUST = '8'
-
-    TIPOS = [
-        (PTRA, 'Pedido Trabalhado'),
-        (PIND, 'Pedido Indenizado'),
-        (DIND, 'Dispensa Indenizada'),
-        (DTRA, 'Dispensa Trabalhada'),
-        (TEXP, 'Término Experiência'),
-        (TEXPANT, 'Término Antecipado'),
-        (TEXPANTEMP, 'Término Antecipado Empregado'),
-        (JUST, 'Justa Causa'),
-    ]
-
-    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=2, choices=TIPOS)
-    aviso = models.DateField(blank=True, null=True)
-    inicio = models.DateField()
-    final = models.DateField()
+    def __str__(self):
+        return f'{self.rub.name} | {self.valor} | {self.comp}'
 
 
 class Notas(Base):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     numero = models.IntegerField()
     canc = models.IntegerField()
     comp = models.DateField()
@@ -209,11 +285,10 @@ class Notas(Base):
     inss = models.FloatField()
     iss = models.FloatField()
     tomador = models.ForeignKey(Obras, on_delete=models.DO_NOTHING)
-    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
 
 
 class Alocacao(Base):
-    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     nota = models.OneToOneField(Notas, on_delete=models.DO_NOTHING, null=True, blank=True)
     obra = models.ForeignKey(Obras, on_delete=models.DO_NOTHING)
     func = models.ManyToManyField(Funcionario)
@@ -242,7 +317,7 @@ class TemAcesso(models.Model):
 
 
 class Imposto(Base):
-    emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     nome = models.CharField(max_length=80)
     valor = models.FloatField()
     comp = models.DateField()
@@ -252,21 +327,3 @@ class Imposto(Base):
 
     def __str__(self):
         return f'{self.emp} - {self.nome} - {self.valor} - {self.comp}'
-
-class Pagamento(Base):
-    func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    pago = models.BooleanField(default=False)
-
-
-class Holerite(Base):
-    class Tipo(models.TextChoices):
-        AD = 'ADIANTAMENTO'
-        FM = 'FOLHA MENSAL'
-        AD13 = 'ADIANTAMENTO 13º'
-        FM13 = 'FOLHA MENSAL 13º'
-
-    emp = models.ForeignKey(Empresa, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=18, choices=Tipo.choices)
-    comp = models.DateField()
-    enviado = models.BooleanField(default=False)
-    funcs = models.ManyToManyField(Pagamento)

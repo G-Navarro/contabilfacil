@@ -1,23 +1,5 @@
 from django import forms
-from .models import Funcionario
-
-'''class FuncionarioForm(forms.ModelForm):
-    class Meta:
-        model = Funcionario
-        exclude = ['cod', 'demissao', 'demitido', 'usuario', 'emp', 'ativa']
-        widgets = {
-            'admissao': forms.DateInput(attrs={'type': 'date'}),
-            'ctpsdata': forms.DateInput(attrs={'type': 'date'}),
-            'rgemiss': forms.DateInput(attrs={'type': 'date'}),
-            'datanasc': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-        fieldsets = [
-        ('Group 1', {'fields': ['nome', 'cpf', 'pis', 'admissao', 'salario', 'cargo', 'cbo', 'turno']}),
-        ('Group 2', {'fields': ['rg', 'rgemiss', 'rgorgao', 'ctps', 'ctpsserie', 'ctpsdata', 'ctpsuf']}),
-        ('Group 3', {'fields': ['logradouro', 'num', 'bairro', 'cidade', 'uf', 'cep']}),
-        ('Group 4', {'fields': [ 'pai', 'mae', 'datanasc', 'cidadenasc', 'ufnasc', 'genero']}),
-        ]'''
+from .models import Funcionario, Imposto
 
 
 class FuncionarioForm(forms.ModelForm):
@@ -69,3 +51,10 @@ class FuncionarioForm(forms.ModelForm):
         self.fields['ctpsserie'].required = False
         self.fields['ctpsdata'].required = False
         self.fields['ctpsuf'].required = False
+
+
+class ImpostoForm(forms.ModelForm):
+    class Meta:
+        model = Imposto
+        fields = '__all__'
+        exclude = ['pago', 'enviado']

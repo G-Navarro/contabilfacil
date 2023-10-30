@@ -37,6 +37,21 @@ try {
     
 }
 
+function formatInputValue(input) {
+    valor = input.value.replace(/\D/g, '')
+    if(valor.length >= 3){
+        decimal = ',' + valor.slice(-2,)
+        valorcompleto = valor.slice(0,-2) + decimal 
+        input.value = valorcompleto
+    }
+  
+    input.value = `${integerPart}${decimalPart}`;
+}
+
+function upperCase(obj) {
+    obj.value = obj.value.toUpperCase();
+  }
+
 try{
     senhamostra = document.getElementById('senhamostra')
     senhamostra.addEventListener('click', mostrarsenha)
@@ -81,6 +96,8 @@ $('.abasmenu').click(
         p = $(e.target).index()
         abasmenu = $('.abasmenu')
         abas = $('.abas')
+        console.log(abasmenu)
+        console.log(abas)
         for(i = 0; i < abasmenu.length; i++){
             $(abasmenu[i]).removeClass('abaativa')
             $(abas[i]).addClass('hidden')
@@ -114,6 +131,22 @@ alterastatus = (obj, status, tr, fl) => {
         obj.addClass('cdanger')
     }
 }
+
+tramite = (obj, emp) => {
+    url = '/tramite_altera'
+    data = { 'tramite': $(obj).attr('id'), 'emp': emp }
+    $.post({
+        url: url,
+        headers: { 'X-CSRFToken': csrftoken },
+        data: data,
+        success: (res) => {
+            if ('status' in res) {
+                alterastatus(obj, res['status'], '<i class="fa-solid fa-check"></i>', '<i class="fa-solid fa-xmark"></i>')
+            }
+        }, error: (res) => {
+            console.log(res);
+        }
+})}
 
 const postData = (url, csrftoken, data, obj, tr, fl) => {
     $.post({
@@ -159,7 +192,7 @@ postData('tarefas', csrftoken, data, obj, '<i class="fa-solid fa-check"></i>', '
 
 pagamento = (obj) => {
 const data = { 'pagamento': $(obj).attr('id') };
-postData('tarefas', csrftoken, data, obj, '<i class="fa-solid fa-hand-holding-dollar"></i>', '<i class="fa-solid fa-money-check-dollar"></i>');
+postData('pagamentos', csrftoken, data, obj, '<i class="fa-solid fa-hand-holding-dollar"></i>', '<i class="fa-solid fa-money-check-dollar"></i>');
 };
 
 bloqueiauser = (obj) => {
@@ -203,12 +236,17 @@ mostrar = (obj) => {
     next = $(obj).next()
     next.removeClass('hidden')
     $(document.body).append(converthtml('<div id="fundo"></div>'))
+    $('#fundo').click(() => {
+        removefundo()
+    })
 }
 
-alteracomp = (obj) => {
-    prev = $(obj).prev()
-    comp = prev.val()
-    $.post({url:'/empresas', headers:{'X-CSRFToken': csrftoken}, data:{'comp':comp}, 
+alteracomp = () => {
+    comp_month = $('#comp_month').val()
+    comp_year = $('#comp_year').val()
+    console.log(comp_month)
+    console.log(comp_year)
+    $.post({url:'/empresas', headers:{'X-CSRFToken': csrftoken}, data:{'comp':`${comp_year}-${comp_month}`}, 
     success: (res) => {
         if(res['msg'] == 'sucesso'){
             location.reload()
@@ -270,15 +308,50 @@ userexiste = (obj) => {
 function pesquisa(obj, id) {
     var input = $(obj).val().toLowerCase();
     $('#'+id+' a').each(function() {
-      var text = $(this).text().toLowerCase();
-      if (input === '') {
-        $(this).show();
-      } else if (text.indexOf(input) > -1) {
-        $(this).show();
-      } else {
-        $(this).hide();
-      }
+        var text = $(this).text().toLowerCase();
+        if (input === '') {
+            $(this).show();
+            $('#resultado_pesquisa').hide()
+        } else if (text.indexOf(input) > -1) {
+            $(this).show();
+            $('#resultado_pesquisa').show()
+        } else {
+            $(this).hide();
+        }
     });
-  }
+}
 
-alakazam = (id) => {$(id).toggle()}
+showmenu = ()=> {
+    height = $('#links').height()
+    toplinks = document.getElementById("links").getBoundingClientRect()['y']
+    console.log(toplinks + height)
+    if ($('#conteudomenu').css('display') == 'none'){
+        $('#conteudomenu').css('display', 'block')
+        $('#conteudomenu').css('top', toplinks + 46.78 + 'px')
+    } else {
+        $('#conteudomenu').css('display', 'none')
+        $('#conteudomenu').css('top', toplinks + 46.78 + 'px')
+    }
+}
+
+showmsg = (msg) => {
+    msg = converthtml(`<div id="msg">${msg}</div>`)
+    console.log(msg)
+    $('body').append(msg)
+    $('#msg').css('display', 'block')
+    setTimeout(function() {
+    $('#msg').remove()
+    }, 3000);
+    
+}
+
+acho = (id) => {$(`#${id}`).removeClass('hidden')}
+alakazam = (id) => {
+    $(id).toggle()
+    fundo = converthtml(`<div id="fundo"></div>`)
+    $('body').append(fundo)
+    $('#fundo').click(() => {
+        $(id).toggle()
+        removefundo()
+    })
+}

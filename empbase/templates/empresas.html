@@ -20,9 +20,13 @@
         </div>
     </div>
 {% endif %}
+<div style="width: 98%; margin: 0 auto;">
+    <input type="text" name="pesquisa" id="pesquisaempresa" placeholder="Pesquisar...">
+</div>
+
 <div class="grid-main">
     {% for emp in emps %}
-    <div class="borda" style="margin: 0.5rem; min-height: 6rem;">
+    <div class="empresas borda" style="margin: 0.5rem; min-height: 6rem;">
         <div style="display: flex; justify-content: space-between; height: 100%;">
             <div style="
                 padding: 0.7rem;">
@@ -39,6 +43,26 @@
     </div>
     {% endfor %}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pesquisaempresa').focus();
+    });
+    document.getElementById('pesquisaempresa').addEventListener('input', function() {
+        var inputText = this.value.toLowerCase();
+        var bordaElements = document.getElementsByClassName('empresas');
+
+        for (var i = 0; i < bordaElements.length; i++) {
+            var pElement = bordaElements[i].querySelector('p');
+            var pText = pElement.innerText.toLowerCase();
+
+            if (pText.includes(inputText)) {
+                bordaElements[i].style.display = 'block';
+            } else {
+                bordaElements[i].style.display = 'none';
+            }
+        }
+    });
+</script>
 {% include 'footer.html' %}
 <script src="{% static 'js/processa.js' %}"></script>
 </html>

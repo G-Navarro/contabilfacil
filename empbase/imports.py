@@ -1,9 +1,12 @@
+from datetime import date, datetime, timedelta
 import re, io, pandas as pd
+import numpy as np
 from django.db.models import F
 from xml.dom.minidom import parse
 from openpyxl.utils import get_column_letter
 from xls2xlsx import XLS2XLSX
-from empbase.models import Alocacao, Funcionario, Empresa, Imposto, Notas, Obras, Contribuintes
+from empbase.models import Alocacao, Funcionario, Empresa, Imposto, Notas, Obras, Contribuintes, PeriodoAquisitivo, TemAcesso, Tramites, Turno, UltimoAcesso, ValeTransporte
+from usuarios.models import Usuario
 
 def xls_to_xlsx(xls_file_path, sheet_name='Sheet1'):
     # Read the .xls file into a pandas DataFrame
@@ -56,23 +59,24 @@ def criar_empresa(arq, usuario):
         arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
     col = pd.read_excel(arq, usecols='a')
+    escritorio = usuario.ultimoacesso.escr
     for i in range(len(col)):
         if col.iloc[i - 1][0] == 'DADOS CADASTRAIS':
             n = i - 4
             if df.loc[n + 5, 'E'] == '1000':
                 break
             responsavel = df.loc[n + 21, 'J']
-            iniciodata = df.loc[n + 5, 'J'].split('/')
+            iniciodata = df.loc[n + 5, 'J'].split('/') if not isinstance(df.loc[n + 5, 'J'], float) else ['01','01','1900']
             capital = df.loc[n + 25, 'J'].replace('.','').replace(',','.') if not isinstance(df.loc[n + 25, 'J'], float) != 'nan' else 0.0
             try:
                 contribuinte = Contribuintes.objects.get(nome=responsavel)
             except:
                 contribuinte = Contribuintes(nome=responsavel)
                 contribuinte.save()
-            try:
-                empresa = Empresa.objects.get(cnpj = subs(df.loc[n + 24, 'E']))
-            except:
-                emp = Empresa(
+            
+            empresa = escritorio.empresa_set.filter(cnpj = subs(df.loc[n + 24, 'E']))
+            if not empresa:
+                emp = escritorio.empresa_set.create(
                 cod = df.loc[n + 5, 'E'],
                 cnpj = subs(df.loc[n + 24, 'E']),
                 inscest = subs(df.loc[n + 25, 'E']) if not isinstance(df.loc[n + 25, 'E'], float) else None,
@@ -93,28 +97,115 @@ def criar_empresa(arq, usuario):
                 cep = df.loc[n + 17, 'E'],
                 cnae = df.loc[n + 18, 'J'],
                 capital = capital,
+                situacao = df.loc[n + 12, 'J'],
                 email = df.loc[n + 22, 'E'],
+                escr = escritorio,
                 responsavel = contribuinte)
                 emp.usuario = usuario
-                try:
-                    empcadastrada = Empresa.objects.get(cnpj=emp.cnpj)
-                    if empcadastrada.rsocial != emp.rsocial:
-                        empcadastrada = emp
-                        empcadastrada.usuario = usuario
-                        empcadastrada.save()
-                    if empcadastrada.cep != emp.cep:
-                        empcadastrada = emp
-                        empcadastrada.usuario = usuario
-                        empcadastrada.save()
-                except:
-                    emp.save()
+                usuario.temacesso.emp.add(emp)
+
+def cria_periodo(func, periodoinicio):
+    datainicio = periodoinicio
+    if periodoinicio.day == 29 and periodoinicio.month == 2:
+        periodoinicio = periodoinicio.replace(day=28)
+    teste = periodoinicio.replace(year=periodoinicio.year + 1)
+    periodofim = teste - timedelta(days=1)
+    datamaximacalc = PeriodoAquisitivo()
+    if func.demitido:
+        diasdedireito = 0
+    else:
+        diasdedireito = 30
+    return func.periodoaquisitivo_set.create(emp=func.emp, periodoinicio=datainicio, periodofim=periodofim, datamaxima = datamaximacalc.datamaxima_calc(periodofim), diasdedireito=diasdedireito)
+
+def cria_ferias(periodo, inicio, final):
+    feriasnova = periodo.ferias_set.create(
+            aviso = inicio - timedelta(days=30),
+            inicio = inicio,
+            final = final
+            )
+    feriasnova.tramite.add(Tramites.objects.create(
+        emp = periodo.func.emp,
+        nome = 'Finalizado',
+        finalizado = True))
+    dias = (final - inicio).days
+    if periodo.diasdedireito > 0:
+        periodo.diasdedireito -= (dias + 1)
+    periodo.save()
+    return feriasnova
 
 
 def criar_funcionario(arq, usuario):
     if not '.xlsx' in arq.name:
         arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
+    if type(df.loc[2, 'F']) == str:
+        if 'RELACAO PARA COMPRA' in df.loc[2, 'F']:
+            col = pd.read_excel(arq, usecols='a')
+            tamanho = range(len(col))
+            contratante = usuario.temacesso.emp.get(nome=df.loc[0, 'A'])
+            for i in tamanho:
+                if type(df.loc[i, 'A']) != float:
+                    if subs(df.loc[i, 'A']):
+                        vtinfo = df.loc[i + 1, 'C']
+                        print(subs(df.loc[i, 'A']))
+                        vt, vtcriado = ValeTransporte.objects.get_or_create(emp=contratante, nome=vtinfo, valor=df.loc[i + 1, 'I'])
+                        func = contratante.funcionario_set.filter(cod=subs(df.loc[i, 'A']))
+                        if func:
+                            func[0].vt = vt if vt else vtcriado
+                            func[0].save()
+            return contratante
+        
+    if type(df.loc[3, 'H']) == str:
+        if 'FÉRIAS CALCULADAS' in df.loc[3, 'H']:
+            col = pd.read_excel(arq, usecols='a')
+            tamanho = range(len(col))
+            for i in tamanho:
+                celula = df.loc[i, 'A'] if type(df.loc[i, 'A']) == str else 'gangnam style'
+                if 'CNPJ' in celula:
+                    cnpj = subs(df.loc[i, 'D'])
+                    contratante = usuario.temacesso.emp.get(cnpj=cnpj)
+                    for n in tamanho:
+                        n = n + i + 1
+                        if n == len(col):
+                            break
+                        celula = df.loc[n, 'A'] if type(df.loc[n, 'A']) != float else ''
+                        try: 
+                            celula = int(celula)
+                        except:
+                            pass
+                        
+                        if type(celula) == int:
+                            func = contratante.funcionario_set.get(cod=df.loc[n, 'A'])
+                            periodoinicio = datetime.strptime(df.loc[n, 'K'], '%d/%m/%Y').date(),
+                            periodofim = datetime.strptime(df.loc[n + 1, 'K'], '%d/%m/%Y').date(),
+                            inicio = datetime.strptime(df.loc[n, 'N'], '%d/%m/%Y').date(),
+                            final = datetime.strptime(df.loc[n + 1, 'N'], '%d/%m/%Y').date(),
+                            periodo = func.periodoaquisitivo_set.filter(periodoinicio = periodoinicio[0]).first()
+                            if periodoinicio[0].day == 29 and periodoinicio[0].month == 2:
+                                periodoinicio = periodoinicio[0].replace(day=28)
+                            else:
+                                periodoinicio = periodoinicio[0]
+                            if periodo:
+                                ferias = periodo.ferias_set.filter(inicio = inicio[0])
+                                if not ferias:
+                                    ferias = cria_ferias(periodo, inicio[0], final[0])
+                                periodo = func.periodoaquisitivo_set.filter(periodoinicio = periodoinicio.replace(year=periodoinicio.year + 1)).first()
+                                if not periodo:
+                                    cria_periodo(func, periodoinicio.replace(year=periodoinicio.year + 1))
+                            else:
+                                periodo = cria_periodo(func, periodoinicio)
+                                ferias = cria_ferias(periodo, inicio[0], final[0])
+                            if func.demitido:
+                                feriasabertas = func.periodoaquisitivo_set.filter(diasdedireito__gt=0)
+                                for ferias in feriasabertas:
+                                    ferias.diasdedireito = 0
+                                    ferias.save()
+                        if 'CNPJ' in str(celula) and cnpj != subs(df.loc[n, 'D']):
+                            break
+                    return contratante
+                
     col = pd.read_excel(arq, usecols='am')
+    jornadapadrao = Turno.objects.get(id=87)
     for i in range(len(col)):
         if col.iloc[i - 1][0] == 'REGISTRO DE EMPREGADO':
             n = i-1
@@ -134,11 +225,14 @@ def criar_funcionario(arq, usuario):
                     teste = df.loc[y, 'BX']
                     if not isinstance(teste, float):
                         if 'RESCISÃO DE CONTRATO DE TRABALHO' in teste:
-                            demissao = df.loc[y + 2, 'CC'].strftime("%Y-%m-%d") if not isinstance(df.loc[y + 2, 'CC'], float) else None
-                            print(df.loc[n + 4, 'AE'])
-                            print(df.loc[y + 2, 'CC'])
+                            if not isinstance(df.loc[y + 2, 'CC'], float):
+                                demissao = df.loc[y + 2, 'CC']
 
-            
+
+            if not pd.isna(df.loc[n + 18, 'S']):
+                datanasc = df.loc[n + 18, 'S'].strftime("%Y-%m-%d")
+            else:
+                datanasc = df.loc[n + 18, 'R'].strftime("%Y-%m-%d")
             func = Funcionario(
             emp = contratante,
             cod = df.loc[n + 4, 'AE'],
@@ -156,28 +250,42 @@ def criar_funcionario(arq, usuario):
             ctpsserie = df.loc[n + 27, 'AE'],
             ctpsdata = df.loc[n + 27, 'AP'].strftime("%Y-%m-%d") if not pd.isna(df.loc[n + 27, 'AP']) else None,
             ctpsuf = df.loc[n + 27, 'BH'],
-            turno = df.loc[n + 36, 'BA'].replace('das ', ''),
+            jornada = jornadapadrao,
             logradouro = end[0],
             num = end[1],
             bairro = end[-4],
             cidade = end[-3],
             uf = end[-2],
             cep = subs(end[-1]),
-            datanasc = df.loc[n + 18, 'R'].strftime("%Y-%m-%d"),
+            datanasc = datanasc,
             cidadenasc = localnasc[0],
             ufnasc = localnasc[1],
             genero = df.loc[n + 29, 'BR'],
             pai = df.loc[n + 20, 'AC'],
             mae = df.loc[n + 23, 'AC'],
-            demissao = demissao, demitido = False if demissao == None else True)
+            demissao = demissao, demitido = False if demissao == None else True,)
             func.usuario = usuario
-
-            funccad = contratante.funcionario_set.get(cod=func.cod)
-            funccad.demitido = func.demitido
-            funccad.salario = func.salario
-            funccad.cargo = func.cargo
-            funccad.cbo = func.cbo
-            funccad.save()
+            funccad = contratante.funcionario_set.filter(cod=func.cod).first()
+            if funccad:
+                funccad.demissao = func.demissao
+                funccad.demitido = func.demitido
+                funccad.salario = func.salario
+                funccad.cargo = func.cargo
+                funccad.cbo = func.cbo
+                funccad.save()
+                if not funccad.periodoaquisitivo_set.filter(periodoinicio=func.admissao):
+                    datacalculo = funccad.admissao
+                    cria_periodo(funccad, datacalculo)
+            else:
+                if not func.demitido:
+                    func.funcacesso = Usuario.objects.create_funcionario(usuario=str(contratante.cod) + func.cod + func.nome.split(' ')[0], nome=func.nome.split(' ')[0], snome=func.nome.split(' ')[-1], password=func.cpf[0:6])
+                    UltimoAcesso.objects.create(escr=contratante.escr,emp=contratante,user=func.funcacesso,comp=date.today())
+                    temacesso = TemAcesso.objects.create(user=func.funcacesso)
+                    temacesso.escr.add(contratante.escr)
+                    temacesso.emp.add(contratante)
+                func.save()
+                datacalculo = datetime.strptime(func.admissao, '%Y-%m-%d')
+                cria_periodo(func, datacalculo)
     return contratante
 
 
@@ -226,7 +334,7 @@ def criar_obra(arq, usuario):
                 cep = df.loc[n + 15, 'E'],
                 emp = emp, 
                 usuario = usuario)
-    return "sucesso"
+    return emp
 
 
 def baixanotas(arquivo, usuario):
@@ -298,20 +406,17 @@ def baixanotas(arquivo, usuario):
         for index in descricao:
             if '/' in index and len(re.sub(r'[^0-9]', '', index)) == 12:
                 cnonum = re.sub(r'[^0-9]', '', index)
-        try:
-            if cnonum:
-                servico = emp.obras_set.filter(cno__contains=subs(cnonum))[0]
-            else:
-                servico = emp.obras_set.filter(cnpj__contains=subs(cnpjtom))
-                for o in servico:
-                    if o.cno == None:
-                        servico = o 
-        except:
-            pass
+
+        if cnonum:
+            servico = emp.obras_set.filter(cno__contains=subs(cnonum)).first()
+        else:
+            servico = emp.obras_set.filter(cnpj__contains=subs(cnpjtom)).filter(cno=None).first()
+
         if not servico:
             servico = emp.obras_set.create(emp=emp, cod=None, cnpj=subs(cnpjtom), cno=cnonum, nome=nometom,
                 endereco=ruatom, num=numtom, bairro=bairrotom, uf=uftom, cep=ceptom)
         
+        print(servico)
         try: 
             nota = emp.notas_set.get(numero=numero)
             if nota.canc == 0 and canc == 1:

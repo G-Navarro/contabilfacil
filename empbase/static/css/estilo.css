@@ -25,6 +25,44 @@
     background: #555; 
 }
 
+.loader {
+    width: 8px;
+    height: 48px;
+    display: block;
+    margin: auto;
+    left: -20px;
+    position: relative;
+    z-index: 99;
+    border-radius: 4px;
+    box-sizing: border-box;
+    animation: animloader 1s linear infinite alternate;
+}
+
+@keyframes animloader {
+    0% {
+        box-shadow: 20px 0 rgba(255, 255, 255, 0.25), 40px 0 white, 60px 0 white;
+    }
+    50% {
+        box-shadow: 20px 0 white, 40px 0 rgba(255, 255, 255, 0.25), 60px 0 white;
+    }
+    100% {
+        box-shadow: 20px 0 white, 40px 0 white, 60px 0 rgba(255, 255, 255, 0.25);
+    }
+}
+
+#blackout{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 98;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+      
 body{
     background-color: #303436;
     color: #e4e6e7;
@@ -50,6 +88,18 @@ input{
     background-color: #f2f2f2;
 }
 
+#login{
+    width: 14rem;
+    border: 1px solid black;
+    border-radius: 3px;
+    padding: 0.7rem;
+}
+
+#login input{
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 .btn{
     padding: 0.4rem;
     background-color: #2653a6;
@@ -59,9 +109,17 @@ input{
     font-weight: bold;
 }
 
+.btn i{
+    padding-right: 0.05rem;
+}
+
 .btn:hover{
     background-color: #f2f2f2;
     color: #2653a6;
+}
+
+.btn a:visited{
+    color: inherit;
 }
 
 .btn-rounded{
@@ -83,6 +141,30 @@ input{
     color: #fff;
 }
 
+.btn-red{
+    border: 2px solid #c13434;
+    background-color: #c13434;
+    color: #fff;
+}
+
+.btn-red:hover {
+    border: 2px solid #c13434;
+    background-color: #fff;
+    color: #c13434;
+}
+
+.btn-yellow {
+    border: 2px solid #fdcb3f;
+    background-color: #ffd257;
+    color: #000;
+}
+
+.btn-yellow:hover {
+    border: 2px solid #fdcb3f;
+    background-color: #383838;
+    color: #fdcb3f;
+}
+
 .btn-greesh{
     box-shadow: 0 0 1rem #00cc00;
 }
@@ -94,7 +176,7 @@ input{
 }
 
 a{
-    color:darkblue;
+    color:#f2f2f2;
     text-decoration: none;
 }
 
@@ -104,8 +186,36 @@ a:hover{
 }
 
 a:visited{
-    color:darkblue;
+    color:inherit;
     text-decoration: none;
+}
+
+.observacao_form{
+    width: 100%;
+}
+
+.observacao {
+    position: relative;
+}
+
+.observacao:hover > .observacao_show {
+    display: inline-block;
+    transition: box-shadow 0.5s;
+}
+
+.observacao_show{
+    display: none;    
+    position: absolute;
+    z-index: 2;
+    top: -31px;
+    left: 5%;
+    background-color: #2f2f2f;
+    box-shadow: 6px 7px 10px #000;
+    color: #f2f2f2;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 12px;
 }
 
 .font-mono{
@@ -121,23 +231,6 @@ a:visited{
     box-shadow: 0 0 2px rgb(241, 241, 241);
     padding: 0.5rem 0.5rem 0.3rem 0.5rem;
     color: #f2f2f2;
-}
-
-#links{
-    color: #f2f2f2;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem 0.3rem;
-}
-
-#links a{
-    padding: 0.5rem 0.3rem;
-    color: #f2f2f2;
-    border-radius: 4px;
-}
-
-#links a:hover{
-    background-color: #f2f2f2;
-    color: #212529;
 }
 
 .dragNdrop{
@@ -274,9 +367,17 @@ a:visited{
     color: #66a3ff;
 }
 
+.titulo{
+    color: #66a3ff;
+}
+
 .padding-sm{
     padding: 0.5rem;
     margin: 0.2rem 0;
+}
+
+.margin-sm{
+    margin: 0.5rem;
 }
 
 #divinfo{
@@ -306,12 +407,14 @@ a:visited{
 
 .formdisplay{
     position: fixed;
-    height: 100%;
-    width: 100%;
-    top: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     justify-content: center;
     align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
     z-index: 2;
 }
 
@@ -335,14 +438,18 @@ a:visited{
 }
 
 .formgroup{
-    display: inline-block;
-    max-height: 90%;
     max-width: 60rem;
     padding: 1rem;
+    max-height: 90vh;
     border: 2px solid #999;
     background-color: #22252B;
-    overflow: auto;
+    overflow-y: auto;
     border-radius: 0 0 3px 3px;
+}
+
+.formgroup textarea{
+    display: block;
+    margin: 0.2rem 0;
 }
 
 .forminput{
@@ -359,7 +466,7 @@ a:visited{
     border: none;
     border-radius: 2px;
     width: 18rem;
-    padding: 0.3rem;
+    padding: 0.1rem;
     font-size: 1.5rem;
     outline: none;
     background-color: #535762;
@@ -408,6 +515,10 @@ a:visited{
     background-color: #F2F2F2;
 }
 
+.sombra{
+    box-shadow: 0px 3px 14px #000000;
+}
+
 #fundo{
     position: fixed;
     width: 100%;
@@ -417,15 +528,14 @@ a:visited{
     opacity: 0.7;
 }
 
-#competencia{
-    display: none;
-    position: absolute;
-    padding: 0.5rem;
-    margin: 0.7rem;
-    background-color: #484e51;
-    border: 1px solid #f2f2f2;
-    border-radius: 4px;
-    z-index: 1;
+.funcinfos{
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem;
+}
+
+.funcinfos > div{
+    width: 49%;
 }
 
 .flexcenter{
@@ -438,12 +548,71 @@ a:visited{
     display: flex; 
     align-items: stretch;
     justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.flexbetween{
+    display: flex; 
+    align-items: center;
+    justify-content: space-between;
+}
+
+.grid_usuarios{
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    align-items: stretch;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-items: start;
+}
+
+.usuario_func{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.usuario_func :nth-child(2){
+    width: 25%;
+}
+
+.usuario_func :nth-child(3){
+    width: 20%;
+}
+
+.usuario_func :nth-child(4){
+    width: 20%;
+}
+
+.usuario_func :nth-child(5){
+    width: 20%;
+}
+
+.usuario_func :nth-child(6){
+    width: 10%;
 }
 
 .msg{
     padding: 0.7rem 1rem;
     text-align: center; 
     margin: 0 auto;
+}
+
+#msg{
+    display: none;
+    padding: 0.7rem 1rem;
+    text-align: center;
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 3px;
+    box-shadow: 0 0 3px white;
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    z-index: 2;
+    background-color: #ff6666;
+    color: black;
+    text-shadow: 0 0 7px white;
 }
 
 .confere{
@@ -492,6 +661,53 @@ a:visited{
     box-shadow: 0 0 8px #00E673;
 }
 
+.cwarning{
+    color: #ffd257;
+    border: 1px solid #ffd257;
+    box-shadow: 0 0 2px #ffd257;
+    transition: box-shadow 0.5s;
+}
+
+.cwarning:hover {
+    box-shadow: 0 0 8px #ffd257;
+}
+
+.botao_seta{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid #f2f2f2;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.botao_seta:hover{
+  background-color: #303436;
+  color: #f2f2f2;
+}
+
+.botao_seta_large{
+    display: inline-block;
+    width: 40%;
+    text-align: center;
+    background-color: #2653a6;
+    color: #f2f2f2;
+    padding: 0.3rem;
+    border-radius: 3px;
+}
+
+.botao_seta_large:hover{
+    background-color: #f2f2f2;
+    color: #2653a6;
+}
+
+.botao_seta_large:visited{
+    color: #f2f2f2;
+}
+
 .grid-main{    
     display: grid;
     grid-template-columns: auto auto auto auto;
@@ -531,6 +747,14 @@ a:visited{
     padding: 2px;
 }
 
+.notificacao{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: firebrick;
+}
+
 select.minimal {
     background-image:
       linear-gradient(45deg, transparent 50%, gray 50%),
@@ -565,4 +789,70 @@ select.minimal {
     outline: 0;
   }
 
+  @media (max-width: 1020px) {
+    .grid-main{    
+        display: grid;
+        grid-template-columns: auto auto auto;
+    }
 
+    #logout{
+        display: inline-block;
+    }
+  }
+
+  @media (max-width: 810px) {
+    .grid-main{    
+        display: grid;
+        grid-template-columns: auto auto;
+    }
+
+    .usuario_func{
+        display: block;
+    }
+
+    .usuario_func :nth-child(1){
+        display: inline-block;
+    }
+
+    .usuario_func :nth-child(2){
+        display: inline-block;
+        width: 80%;
+    }
+    
+    .usuario_func :nth-child(3){
+        display: inline-block;
+        width: fit-content;
+    }
+    
+    .usuario_func :nth-child(4){
+        display: inline-block;
+        width: fit-content;
+        margin: 1rem;
+    }
+    
+    .usuario_func :nth-child(5){
+        display: inline-block;
+        width: fit-content;
+    }
+    
+    .usuario_func :nth-child(6){
+        width: fit-content;
+    }
+}
+
+  @media (max-width: 700px) {
+    .funcinfos {
+        display: block;
+    }
+
+    .funcinfos > div{
+        width: 100%;
+    }
+  }
+
+  @media (max-width: 570px) {
+    .grid-main{    
+        display: grid;
+        grid-template-columns: auto;
+    }
+  }

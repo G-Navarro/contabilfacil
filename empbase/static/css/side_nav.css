@@ -1,13 +1,13 @@
-.content_left{
-    margin-top: -8px;
-    max-width: 20rem;
+#content_left{
+    width: 20rem;
     border-right: 1px solid black;
     box-shadow: 0 6px 8px black;
     position: fixed;
-    height: 100%;
+    bottom: 0;
+    z-index: 2;
 }
 
-.content_left a{
+#content_left a{
     display: inline-block;
     width: 100%;
     padding: 0.75rem;
@@ -15,11 +15,31 @@
     list-style: none;
 }
 
-.content_left a:hover{
+#content_left a:hover{
     color: #19376d;
     background-color: #f1f1f1;
 }
 
-.content_right{
-    margin-left: 21rem;
+#content_right{
+    margin-left: 20rem;
+}
+
+#esconde_left{
+    margin: 0 0.3rem;
+}
+
+@media (max-width: 930px) {
+    #esconde_left{        
+        margin: 0 0.3rem;
+    }
+
+    #content_left{
+        background-color: #303436;
+        width: 0;
+        border: none;
+    }
+
+    #content_right{
+        margin-left: 0;
+    }
 }
