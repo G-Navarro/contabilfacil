@@ -103,6 +103,7 @@ tbody tr:nth-child(odd){
     margin: 0.2rem 0;
 }
 .ponto{
+    display: block;
     position: fixed;
     top: 50%;
     left: 50%;
