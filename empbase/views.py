@@ -759,12 +759,12 @@ class Ponto(TemplateView):
         #cria mes inteiro de dias de trabalho para o funcionario
         if ua.comp >= func.admissao:
             self.cria_mes_dias(ua.comp, func)
-        diasabertos = func.diadetrabalho_set.filter(encerrado=False, inicioem__lte=date.today() - timedelta(days=3))
+        diasabertos = func.diadetrabalho_set.filter(entrou=False, encerrado=False, inicioem__lte=date.today() - timedelta(days=3))
         if diasabertos:
             for dia in diasabertos:
                 dia.encerrado = True
                 dia.save()
-        diaaberto = func.diadetrabalho_set.filter(entrou=False, encerrado=False, inicioem__lte=date.today()).order_by('inicioem').first()
+        diaaberto = func.diadetrabalho_set.filter(encerrado=False, inicioem__lte=date.today()).order_by('inicioem').first()
         diadetrabalho = func.diadetrabalho_set.filter(inicioem__year=ua.comp.year, inicioem__month=ua.comp.month).order_by('inicioem')
         _, qtde_dias = calendar.monthrange(ua.comp.year, ua.comp.month)
         context = {
