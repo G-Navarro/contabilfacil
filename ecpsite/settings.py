@@ -70,7 +70,7 @@ DATABASES = {
         'NAME': 'contabilfacil',                      
         'USER': 'admin',
         'PASSWORD': 'ecpaulista',
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': '',
     }
 }
