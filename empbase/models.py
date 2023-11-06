@@ -249,7 +249,7 @@ class DiaDeTrabalho(Base):
     fimintervalo = models.DateTimeField(null=True, blank=True)
     saida = models.DateTimeField(null=True, blank=True)
     horastrabalhadas = models.IntegerField(default=0)
-    folga = models.BooleanField(default=False)
+    folga = models.BooleanField(default=False) 
     retificar = models.BooleanField(default=False)
     observacao = models.TextField(null=True, blank=True)
 

@@ -93,7 +93,7 @@ try{
   agora = new Date()
   hora = agora.toTimeString().slice(0, 5)
   data = agora.toLocaleDateString().split('/')
-  if (data > datainicio){
+  if (data > datainicio){ 
     dia_hora.val(datainicio + 'T' + hora)
     console.log(data, datainicio)
   } else {

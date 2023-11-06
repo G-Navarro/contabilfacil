@@ -54,7 +54,7 @@
                     <div class="borda padding-sm margin-sm sombra" style="background-color: #303436;">
                         <p style="text-align: center; font-size: 1.5rem;">Início do Turno em:</p>
                         <p style="text-align: center; font-size: 1.5rem;" class="titulo">{{ diaaberto.inicioem|date:'d/m/Y' }}</p>
-                    </div>
+                    </div> 
                     {% csrf_token %}
                     <div class="borda margin-sm sombra" style="background-color: #303436;">
                         <input type="hidden" id="datainicio" name="datainicio" value="{{ diaaberto.inicioem|date:'Y-m-d' }}">

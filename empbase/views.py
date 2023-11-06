@@ -912,7 +912,7 @@ class Ponto(TemplateView):
                 print(ua, type(ua.comp), ua.comp.month, '913', diadetrabalho.inicioem.month)
                 ua.comp = f'{diadetrabalho.inicioem.year}-{diadetrabalho.inicioem.month}-01'
                 ua.save()
-            diadetrabalho.save()
+            diadetrabalho.save() 
             diaanterior.save()
             return JsonResponse({'dia': diapost.strftime('%d'), 'hora': f'{diapost.strftime("%H:%M")}', 'model': model_to_dict(diadetrabalho)})
         else:            
