@@ -110,6 +110,11 @@ tbody tr:nth-child(odd){
     transform: translate(-50%, -50%);
     z-index: 2;
 }
+
+.hidden{
+    display: none;
+}
+
 .botoes_marca{
   display: flex;
   align-items: stretch;
