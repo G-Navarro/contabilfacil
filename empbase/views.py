@@ -592,7 +592,7 @@ class RelatorioPonto(TemplateView):
                 ponto.cria_mes_dias(ua.comp, func)
         _, qtde_dias = calendar.monthrange(ua.comp.year, ua.comp.month)
         diadetrabalho = func.diadetrabalho_set.filter(inicioem__year=ua.comp.year, inicioem__month=ua.comp.month).order_by('inicioem')
-        dias_encerrar = func.diadetrabalho_set.filter(encerrado=False, inicioem__lte=date.today() - timedelta(days=3))
+        dias_encerrar = func.diadetrabalho_set.filter(entrou=False, encerrado=False, inicioem__lte=date.today() - timedelta(days=3))
         if dias_encerrar:
             for dia in dias_encerrar:
                 dia.encerrado = True
@@ -643,6 +643,13 @@ class RelatorioPonto(TemplateView):
             diadetrabalho.retificar = True
             diadetrabalho.save()
             return HttpResponseRedirect(f'relatorioponto?funcid={func.cod}')
+        #lanca faltas
+        if rpost['tipo'] == 'falta':
+            func = ua.emp.funcionario_set.get(cod=rpost['funcid'])
+            falta = datetime.strptime(rpost['falta'], '%d/%m/%Y').date()
+            ponto = Ponto()
+            ponto.lanca_faltas(func, falta)
+            return JsonResponse({'status': 'ok'})
 
 @method_decorator(login_required, name='dispatch')
 class Ponto(TemplateView):
@@ -669,13 +676,13 @@ class Ponto(TemplateView):
         diafolga = jornada.diafolga
         diadetrabalho.lancamento_set.all().delete()
         #calcula se teve hora extra ou falta
-        horasdodia = abs((diadetrabalho.entrada - diadetrabalho.saida).total_seconds())/3600
+        horasdodia = abs((diadetrabalho.entrada - diadetrabalho.saida).total_seconds())/3600 if diadetrabalho.entrada and diadetrabalho.saida else 0
         intervalo = abs((diadetrabalho.intervalo - diadetrabalho.fimintervalo).total_seconds())/3600 if diadetrabalho.intervalo else 0
         teveintervalo = True if intervalo > 0 else False
 
         #se nao teve intervalo subtrai o horario do intervalo para nao lancar duplicado
         totalcargahoraria = horasdodia - intervalo if teveintervalo else horasdodia
-        diadetrabalho.horastrabalhadas = totalcargahoraria if totalcargahoraria > 0 else 0
+        diadetrabalho.horastrabalhadas = totalcargahoraria
         #se nao teve intervalo lanca uma intrajornada igual ao intervalo no contrato
         if horasdodia > cargahoraria and not teveintervalo and jornadaintervalo != 0:
             rub = Rubrica.objects.get_or_create(emp=func.emp, name='Intrajornada', cod=201)[0]
@@ -696,19 +703,19 @@ class Ponto(TemplateView):
                 rub = Rubrica.objects.get_or_create(emp=func.emp, name='Vale Transporte', cod=48)[0]
                 lanc = func.lancamento_set.create(rub=rub, valor=1, comp=diadetrabalho.inicioem, diatrabalhado=diadetrabalho)
 
-        #agora calcula se trabalhou depois das 22h para lancar adicional noturno
-        entrada = self.is_apos22(diadetrabalho.entrada, diadetrabalho.inicioem)
-        intervalo = self.is_apos22(diadetrabalho.intervalo, diadetrabalho.inicioem, True) if diadetrabalho.intervalo else 0
-        fimintervalo = self.is_apos22(diadetrabalho.fimintervalo, diadetrabalho.inicioem, True) if diadetrabalho.fimintervalo else 0
-        saida = self.is_apos22(diadetrabalho.saida, diadetrabalho.inicioem)
-        horasapos22 = (entrada + (intervalo + (fimintervalo + saida)))
-        if teveintervalo:
-            horasapos22 -= jornadaintervalo
-        adicnoturno = horasapos22/3600
-        if adicnoturno > 0:
-            rub = Rubrica.objects.get_or_create(emp=func.emp, name='Adicional Noturno', cod=25)[0]
-            lanc = func.lancamento_set.create(rub=rub, valor=adicnoturno, comp=diadetrabalho.inicioem, diatrabalhado=diadetrabalho)
-        
+            #agora calcula se trabalhou depois das 22h para lancar adicional noturno
+            entrada = self.is_apos22(diadetrabalho.entrada, diadetrabalho.inicioem)
+            intervalo = self.is_apos22(diadetrabalho.intervalo, diadetrabalho.inicioem, True) if diadetrabalho.intervalo else 0
+            fimintervalo = self.is_apos22(diadetrabalho.fimintervalo, diadetrabalho.inicioem, True) if diadetrabalho.fimintervalo else 0
+            saida = self.is_apos22(diadetrabalho.saida, diadetrabalho.inicioem)
+            horasapos22 = (entrada + (intervalo + (fimintervalo + saida)))
+            if teveintervalo:
+                horasapos22 -= jornadaintervalo
+            adicnoturno = horasapos22/3600
+            if adicnoturno > 0:
+                rub = Rubrica.objects.get_or_create(emp=func.emp, name='Adicional Noturno', cod=25)[0]
+                lanc = func.lancamento_set.create(rub=rub, valor=adicnoturno, comp=diadetrabalho.inicioem, diatrabalhado=diadetrabalho)
+            
     def cria_mes_dias(self, mes, func):
         if not func.diadetrabalho_set.filter(inicioem__year=mes.year, inicioem__month=mes.month).order_by('inicioem'):
             _, qtde_dias = calendar.monthrange(mes.year, mes.month)
@@ -737,10 +744,10 @@ class Ponto(TemplateView):
             diadetrabalho = func.diadetrabalho_set.get(inicioem=falta)
             temfalta = diadetrabalho.lancamento_set.filter(rub__name='Horas Faltas')
             if not temfalta:
-                diadetrabalho.entrada = diadetrabalho.entrada.replace(day=falta.day, month=falta.month, year=falta.year, hour=0, minute=0, second=0)
-                diadetrabalho.intervalo = diadetrabalho.intervalo.replace(day=falta.day, month=falta.month, year=falta.year, hour=0, minute=0, second=0)
-                diadetrabalho.fimintervalo = diadetrabalho.fimintervalo.replace(day=falta.day, month=falta.month, year=falta.year, hour=0, minute=0, second=0)
-                diadetrabalho.saida = diadetrabalho.saida.replace(day=falta.day, month=falta.month, year=falta.year, hour=0, minute=0, second=0)
+                diadetrabalho.entrada = None
+                diadetrabalho.intervalo = None
+                diadetrabalho.fimintervalo = None
+                diadetrabalho.saida = None
                 self.calcula_lancametos(diadetrabalho, func.jornada, func)
                 diadetrabalho.encerrado = True
                 diadetrabalho.save()
@@ -757,7 +764,7 @@ class Ponto(TemplateView):
             for dia in diasabertos:
                 dia.encerrado = True
                 dia.save()
-        diaaberto = func.diadetrabalho_set.filter(encerrado=False, inicioem__lte=date.today()).order_by('inicioem').first()
+        diaaberto = func.diadetrabalho_set.filter(entrou=False, encerrado=False, inicioem__lte=date.today()).order_by('inicioem').first()
         diadetrabalho = func.diadetrabalho_set.filter(inicioem__year=ua.comp.year, inicioem__month=ua.comp.month).order_by('inicioem')
         _, qtde_dias = calendar.monthrange(ua.comp.year, ua.comp.month)
         context = {
@@ -887,9 +894,16 @@ class Ponto(TemplateView):
             if diadetrabalho.entrou and not diadetrabalho.encerrado:
                 if diadetrabalho.fimintervalo != diadetrabalho.intervalo:
                     if not diadetrabalho.fimintervalo:
-                        msg = 'Você deve marcar o fim do intervalo'
-                      
-                if not msg and diadetrabalho.entrada <= diapost:
+                        msg = 'Você deve marcar o fim do intervalo'  
+                        go = False
+                    elif diadetrabalho.fimintervalo > diapost:
+                        msg = 'Fim do intervalo maior que a saida'       
+                        go = False
+                    else:
+                        go = True
+                else:
+                    go = True
+                if diadetrabalho.entrada <= diapost and go:
                     diadetrabalho.saida = diapost
                     diadetrabalho.encerrado = True
                     self.calcula_lancametos(diadetrabalho, func.jornada, func)
