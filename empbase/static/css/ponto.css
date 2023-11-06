@@ -102,7 +102,13 @@ tbody tr:nth-child(odd){
     width: 7rem;
     margin: 0.2rem 0;
 }
-
+.ponto{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
 .botoes_marca{
   display: flex;
   align-items: stretch;
