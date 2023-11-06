@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-1o_f-k#%(5_6szobq0!si(6iv-l^l8i!3_00bm2hj^y(*b)c0q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['3.13.47.36', 'localhost']
 
 
 # Application definition
@@ -66,8 +66,12 @@ WSGI_APPLICATION = 'ecpsite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'contabilfacil',                      
+        'USER': 'admin',
+        'PASSWORD': 'ecpaulista',
+        'HOST': '',
+        'PORT': '',
     }
 }
 
@@ -107,6 +111,9 @@ LOGIN_URL = ''
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+import os
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
