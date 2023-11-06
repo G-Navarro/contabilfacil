@@ -71,6 +71,15 @@
 
 .forminputponto .btn{
   margin-left: 0.5rem;
+  width: 100%;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+
+#dia_hora {
+  margin: 0.5rem auto;
+  display: block;
+  font-size: 1.5rem;
 }
 
 #tabelaponto th:not(:first-child),
@@ -92,4 +101,26 @@ tbody tr:nth-child(odd){
     display: block;
     width: 7rem;
     margin: 0.2rem 0;
+}
+
+.botoes_marca{
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+}
+
+.btn_marca{
+    width: 8rem;
+    font-size: 1.5rem;
+    margin: 0.5rem;
+}
+
+@media screen and (max-width: 630px) {
+  .botoes_marca{
+    display: grid;
+    align-items: stretch;
+    justify-content: space-around;
+    grid-template-columns: auto auto;
+  }
+  
 }

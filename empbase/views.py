@@ -748,6 +748,7 @@ class Ponto(TemplateView):
     def get(self, request, **kwargs):
         ua, acesso = getUA(request.user)
         func = request.user.funcionario_set.get()
+        hoje = date.today()
         #cria mes inteiro de dias de trabalho para o funcionario
         if ua.comp >= func.admissao:
             self.cria_mes_dias(ua.comp, func)
@@ -784,13 +785,13 @@ class Ponto(TemplateView):
             diafolga = datetime.strptime(rpost['diafolga'], '%Y-%m-%d').date()
             dia = func.diadetrabalho_set.filter(inicioem=diafolga).first()
             dia.encerrado = True
+            dia.folga = True
             dia.save()
             return HttpResponseRedirect('ponto')
         if 'inicioem' in rpost:
             inicioem = rpost['inicioem']
             dateedit = datetime.strptime(inicioem, '%Y-%m-%d').date()
             diadetrabalho = func.diadetrabalho_set.get(inicioem=dateedit)
-            print(diadetrabalho.entrada)
             if diadetrabalho:
                 #faz object datetime 
                 entradaedit = datetime.strptime(rpost['entrada'], '%Y-%m-%dT%H:%M')
@@ -887,11 +888,11 @@ class Ponto(TemplateView):
                 if diadetrabalho.fimintervalo != diadetrabalho.intervalo:
                     if not diadetrabalho.fimintervalo:
                         msg = 'Você deve marcar o fim do intervalo'
-                else:          
-                    if diadetrabalho.entrada <= diapost:
-                        diadetrabalho.saida = diapost
-                        diadetrabalho.encerrado = True
-                        self.calcula_lancametos(diadetrabalho, func.jornada, func)
+                      
+                if not msg and diadetrabalho.entrada <= diapost:
+                    diadetrabalho.saida = diapost
+                    diadetrabalho.encerrado = True
+                    self.calcula_lancametos(diadetrabalho, func.jornada, func)
                 
                 #diferenca_entrada = diadetrabalho.entrada - jornada.entrada
             elif diaanterior.entrou and not diaanterior.encerrado and diaanterior.saida.time() == time(0, 0, 0):
@@ -906,6 +907,11 @@ class Ponto(TemplateView):
                 #msg = 'Você deve marcar o fim do intervalo'
             
         if not msg:
+            if ua.comp.month != diadetrabalho.inicioem.month or ua.comp.year != diadetrabalho.inicioem.year:
+                ua = UltimoAcesso.objects.filter(user=request.user).first()
+                print(ua, type(ua.comp), ua.comp.month, '913', diadetrabalho.inicioem.month)
+                ua.comp = f'{diadetrabalho.inicioem.year}-{diadetrabalho.inicioem.month}-01'
+                ua.save()
             diadetrabalho.save()
             diaanterior.save()
             return JsonResponse({'dia': diapost.strftime('%d'), 'hora': f'{diapost.strftime("%H:%M")}', 'model': model_to_dict(diadetrabalho)})

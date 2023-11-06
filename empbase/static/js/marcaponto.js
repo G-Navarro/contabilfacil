@@ -1,7 +1,8 @@
 function marcaponto(obj) {    
+  event.preventDefault();
   obj = $(obj)
   tipo = obj.attr('id').split('_');
-  horario = $('#'+tipo[1]).val()
+  horario = $('#dia_hora').val()
   diainicio = $('#datainicio').val()
 
   //checa se é data futura
@@ -12,7 +13,7 @@ function marcaponto(obj) {
   agora_formatado = data + 'T' + hora
   console.log(horario, agora_formatado)
   if (horario > agora_formatado){
-    alert('Data inválida')
+    alert('Data e hora não pode ser maior que agora')
   } else {
     // Define the object mapping for column indexes
     var columnIndexes = {
@@ -23,7 +24,7 @@ function marcaponto(obj) {
     };
 
     // Get the column index based on the "tipo" value
-    var columnIndex = columnIndexes[tipo];
+    var columnIndex = columnIndexes[tipo[1]];
     event.preventDefault();
     $.post({
       url: 'ponto',
@@ -42,7 +43,8 @@ function marcaponto(obj) {
             }, 3000);
           });
         } else {
-          obj.remove()
+          obj.addClass('btn-green')
+          obj.prop('disabled', true)
           // Retrieve the received "dia" and "hora" values from the response
           var dia = response.dia;
           var hora = response.hora;
@@ -86,19 +88,19 @@ function isValidDateTime(dateTimeString) {
 }
 
 try{
-  datainicio = $('#datainicio').val()
-  entrada = $('#entrada').val().slice(11, 16)
-  inputs = document.querySelectorAll('.naomarcado')
+  datainicio = $('#datainicio')
+  dia_hora = $('#dia_hora')
   agora = new Date()
   hora = agora.toTimeString().slice(0, 5)
   data = agora.toLocaleDateString().split('/')
-  data = data[2] + '-' + data[1] + '-' + data[0]
-  if (data > datainicio && entrada == '00:00') {
-    data = datainicio
-  } 
-  inputs.forEach(function(input) {
-    input.value = data + 'T' + hora;
-  });} catch(e){
+  if (data > datainicio){
+    dia_hora.val(datainicio + 'T' + hora)
+    console.log(data, datainicio)
+  } else {
+    data = data[2] + '-' + data[1] + '-' + data[0]
+    dia_hora.val(data + 'T' + hora)
+  }
+  } catch(e){
     console.log(e)
   }
 
@@ -154,6 +156,21 @@ try{
     $('body').append(loading)
     func = $('#funcid').val()
     falta = $('#datafalta').val()
+    data = {'tipo': 'falta', 'funcid':func, 'falta':falta,}
+    $.post({url: '/ponto', headers: {'X-CSRFToken': csrftoken}, data,
+      success: (res)=>{
+        if(res['status'] == 'ok'){
+          location.reload()
+        }
+      }, error: (res)=>{
+        console.log(res)
+    }})}
+
+  marca_folga = () => {
+    loading = converthtml("<div id=blackout><span class='loader'></span></div>")
+    $('body').append(loading)
+    func = $('#funcid').val()
+    folga = $('#datafalta').val()
     data = {'tipo': 'falta', 'funcid':func, 'falta':falta,}
     $.post({url: '/ponto', headers: {'X-CSRFToken': csrftoken}, data,
       success: (res)=>{

@@ -50,60 +50,31 @@
                 <p style="text-align: center; font-size: 2rem;">{{ func.nome }}</p>
             </div>
             {% if diaaberto %}
-                <div class="formdisplay">
-                    <div>
-                        <div class="forminput_barra">
-                            <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        <div class="formgroup ponto">
-                            <form>     
-                                <p>Início do Turno em: {{ diaaberto.inicioem|date:'d/m/Y' }}</p>
-                                {% csrf_token %}
-                                <input type="hidden" id="datainicio" name="datainicio" value="{{ diaaberto.inicioem|date:'Y-m-d' }}">
-                                <div class="forminput forminputponto borda padding-sm">
-                                    <label for="entrada">Entrada</label>                                    
-                                    <div>
-                                        <input type="datetime-local" id="entrada" name="entrada" {% if not diaaberto.entrada %} class="naomarcado" {% else %} value="{{ diaaberto.entrada.date|date:'Y-m-d' }}T{{ diaaberto.entrada.time|ajusta_hora }}" {% endif %}>
-                                        {% if not diaaberto.entrada %}
-                                            <button id="botao_entrada" class="btn" onclick="marcaponto(this)"><span class="fa-solid fa-check-to-slot"></span></button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="forminput forminputponto borda padding-sm">
-                                    <label for="intervalo">Intervalo</label>
-                                    <div>
-                                        <input type="datetime-local" id="intervalo" name="intervalo" {% if not diaaberto.intervalo %} class="naomarcado" {% else %} value="{{ diaaberto.intervalo.date|date:'Y-m-d' }}T{{ diaaberto.intervalo.time|ajusta_hora }}" {% endif %}>
-                                        {% if not diaaberto.intervalo %}
-                                            <button id="botao_intervalo" class="btn" onclick="marcaponto(this)"><span class="fa-solid fa-check-to-slot"></span></button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="forminput forminputponto borda padding-sm">
-                                    <label for="fimintervalo">Fim de Intervalo</label>
-                                    <div>
-                                        <input type="datetime-local" id="fimintervalo" name="fimintervalo" {% if not diaaberto.fimintervalo %} class="naomarcado" {% else %} value="{{ diaaberto.fimintervalo.date|date:'Y-m-d' }}T{{ diaaberto.fimintervalo.time|ajusta_hora }}" {% endif %}>
-                                        {% if not diaaberto.fimintervalo %}
-                                            <button id="botao_fimintervalo" class="btn" onclick="marcaponto(this)"><span class="fa-solid fa-check-to-slot"></span></button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="forminput forminputponto borda padding-sm">
-                                    <label for="saida">Saida</label>
-                                    <div>
-                                        <input type="datetime-local" id="saida" name="saida" {% if not diaaberto.saida %} class="naomarcado" {% else %} value="{{ diaaberto.saida.date|date:'Y-m-d' }}T{{ diaaberto.saida.time|ajusta_hora }}" {% endif %}>
-                                        {% if not diaaberto.saida %}
-                                            <button id="botao_saida"  class="btn" onclick="marcaponto(this)"><span class="fa-solid fa-check-to-slot"></span></button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </form>
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" id="diafolga" name="diafolga" value="{{ diaaberto.inicioem|date:'Y-m-d' }}">
-                                <button class="btn btn-yellow" type="submit">Folga</button>
-                            </form>
+                <div class="formdisplay ponto">  
+                    <div class="borda padding-sm margin-sm sombra" style="background-color: #303436;">
+                        <p style="text-align: center; font-size: 1.5rem;">Início do Turno em:</p>
+                        <p style="text-align: center; font-size: 1.5rem;" class="titulo">{{ diaaberto.inicioem|date:'d/m/Y' }}</p>
+                    </div>
+                    {% csrf_token %}
+                    <div class="borda margin-sm sombra" style="background-color: #303436;">
+                        <input type="hidden" id="datainicio" name="datainicio" value="{{ diaaberto.inicioem|date:'Y-m-d' }}">
+                        <label for="dia_hora" class="titulo" style="text-align: center; display: block; font-size: 1.5rem;">Dia e hora:</label>
+                        <input type="datetime-local" id="dia_hora" name="dia_hora" class="dia_hora">    
+                        <div class="botoes_marca">                            
+                            <button id="botao_entrada" {% if not diaaberto.entrada %} class="btn btn_marca"  onclick="marcaponto(this)"{% else %} class="btn btn-green btn_marca" {% endif %}>Entrada<br><i class="fa-solid fa-right-to-bracket"></i></button>
+                        
+                            <button id="botao_intervalo" {% if not diaaberto.intervalo %} class="btn btn_marca"  onclick="marcaponto(this)"{% else %} class="btn btn-green btn_marca" {% endif %}>Intervalo<br><i class="fa-solid fa-utensils"></i></button>
+                        
+                            <button id="botao_fimintervalo" {% if not diaaberto.fimintervalo %} class="btn btn_marca"  onclick="marcaponto(this)"{% else %} class="btn btn-green btn_marca" {% endif %}>Fim intervalo<br><i class="fa-solid fa-business-time"></i></button>
+                        
+                            <button id="botao_saida" {% if not diaaberto.saida %} class="btn btn_marca"  onclick="marcaponto(this)"{% else %} class="btn btn-green btn_marca" {% endif %}>Saida<br><i class="fa-solid fa-right-from-bracket"></i></button>
                         </div>
                     </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" id="diafolga" name="diafolga" value="{{ diaaberto.inicioem|date:'Y-m-d' }}">
+                        <button class="btn btn-yellow" type="submit">Folga</button>
+                    </form>
                 </div>
                 <div id="fundo" onclick="removefundo()"></div>
             {% endif %}
