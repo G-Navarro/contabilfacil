@@ -104,52 +104,45 @@ try{
     console.log(e)
   }
 
-try{
+$('#retificarponto').hover(()=> {
+  datainicio = $('#inicioem').val()
+  entrada = $('#entrada').val()
+  intervalo = $('#intervalo').val()
+  fimintervalo = $('#fimintervalo').val()
+  saida = $('#saida').val()
 
-  $('.ponto_retifica input').on('input', ()=> {
-    datainicio = $('#datainicio').val()
-    entrada = $('#entrada').val()
-    intervalo = $('#intervalo').val()
-    fimintervalo = $('#fimintervalo').val()
-    saida = $('#saida').val()
-
-    entradah = entrada.substring(11,16)
-    intervaloh = intervalo.substring(11,16)
-    fimintervaloh = fimintervalo.substring(11,16)
-    saidah = saida.substring(11,16)
-    
-    setTimeout(() => {
-      $('.ponto button').prop('disabled', true);
-      if (entrada.slice(0, 10) > datainicio) {
-        alert('Entrada não pode ser maior que a data de início');
-      }
-      else if (entrada > saida && saidah != '00:00') {
-        alert('Entrada não pode ser maior que a saída');
-      }
-      else if (entrada < saida && saidah == '00:00') {
-        alert('Hora da saída não pode ser 00:00');
-      }
-      else if (entrada > intervalo && intervalo != fimintervalo) {
-        alert('Entrada não pode ser maior que o início do intervalo');
-      } 
-      else if (intervalo > fimintervalo && fimintervaloh != '00:00') {
-        alert('Início intervalo não pode ser maior que o fim do intervalo');
-      }
-      else if (fimintervalo > saida && saidah != '00:00') {
-        alert('Fim do intervalo não pode ser maior que a saída ');
-      }
-      else{
-        $('.ponto button').prop('disabled', false);
-      }
-    }, 500);
-    /*if (entradah == '00:00' && intervaloh == '00:00' && fimintervaloh == '00:00' && saidah == '00:00' || saida == '') {
-      event.preventDefault();
-      alert('Todos os campos estão vazios');
-    }*/
-  });} catch(err){
-    console.log('--123--, marcaponto')
-    console.log(err)
+  entradah = entrada.substring(11,16)
+  intervaloh = intervalo.substring(11,16)
+  fimintervaloh = fimintervalo.substring(11,16)
+  saidah = saida.substring(11,16)
+  $("#retificarponto").prop('disabled', true);
+  if (entrada.slice(0, 10) > datainicio) {
+    showmsg('Entrada não pode ser maior que a data de início');
   }
+  else if (entrada.slice(0, 10) < datainicio) {
+    showmsg('Entrada não pode ser menor que a data de início');
+  }
+  else if (entrada > saida && saidah != '00:00') {
+    showmsg('Entrada não pode ser maior que a saída');
+  }
+  else if (entrada < saida && saidah == '00:00') {
+    showmsg('Hora da saída não pode ser 00:00');
+  }
+  else if (entrada > intervalo && intervalo != fimintervalo) {
+    showmsg('Entrada não pode ser maior que o início do intervalo');
+  } 
+  else if (intervalo > fimintervalo && fimintervaloh != '00:00') {
+    showmsg('Início intervalo não pode ser maior que o fim do intervalo');
+  }
+  else if (fimintervalo > saida && saidah != '00:00') {
+    showmsg('Fim do intervalo não pode ser maior que a saída ');
+  } else {
+    $("#retificarponto").prop('disabled', false);
+  }})
+  /*if (entradah == '00:00' && intervaloh == '00:00' && fimintervaloh == '00:00' && saidah == '00:00' || saida == '') {
+    event.preventDefault();
+    alert('Todos os campos estão vazios');
+  }*/
 
   marca_falta = () => {
     loading = converthtml("<div id=blackout><span class='loader'></span></div>")

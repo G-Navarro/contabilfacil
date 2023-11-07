@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-1o_f-k#%(5_6szobq0!si(6iv-l^l8i!3_00bm2hj^y(*b)c0q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.13.47.36', 'localhost']
+ALLOWED_HOSTS = ['3.13.47.36', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -65,6 +65,13 @@ WSGI_APPLICATION = 'ecpsite.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "mydatabase",
+    }
+}
+
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'contabilfacil',                      
@@ -73,7 +80,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
-}
+}'''
 
 
 # Password validation

@@ -56,8 +56,8 @@
                         </a>
                     </div>  
                     <div class="nome">
-                        <span {% if func.demitido %}style="color:#ff3333" {% endif %}>
-                            <a href="{% url 'funcionarios' func.cod %}">
+                        <span>
+                            <a href="{% url 'funcionarios' func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}>
                                 {{ func.nome }} {% if func.demitido %} - {{ func.demissao|date:"d/m/Y" }}{% endif %}
                             </a>
                         </span>

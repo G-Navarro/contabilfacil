@@ -205,7 +205,6 @@ def criar_funcionario(arq, usuario):
                     return contratante
                 
     col = pd.read_excel(arq, usecols='am')
-    jornadapadrao = Turno.objects.get(id=87)
     for i in range(len(col)):
         if col.iloc[i - 1][0] == 'REGISTRO DE EMPREGADO':
             n = i-1
@@ -216,6 +215,9 @@ def criar_funcionario(arq, usuario):
             if len(cnpj) == 13:
                 cnpj = '0' + cnpj
             contratante = usuario.temacesso.emp.get(cnpj=cnpj)
+            jornadapadrao = Turno.objects.filter(emp=contratante).first()
+            if not jornadapadrao:
+                jornadapadrao = Turno.objects.create(emp=contratante)
             demissao = None
             vezes = 0
             for y in range(20):

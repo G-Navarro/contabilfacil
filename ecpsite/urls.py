@@ -4,7 +4,7 @@ from envioemails.views import Envioemails
 from empbase.views import AlteraSenha, FuncionarioTodos, Index, Funcionario, Empresas, Notas, Obras, Alocacao, Impostos, Pagamentos, Ponto, RelatorioPonto, Tarefas, Usuarios, cadastrar, buscadados, alocacao_edit, logout_view, tramite_altera
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('ecp/', admin.site.urls),
     path('', Index.as_view(), name=''),
     path('empresas', Empresas.as_view(), name='empresas'),
     path('tarefas', Tarefas.as_view(), name='tarefas'),

@@ -335,12 +335,13 @@ showmenu = ()=> {
 }
 
 showmsg = (msg) => {
+    $('#msg').remove()
     msg = converthtml(`<div id="msg">${msg}</div>`)
     console.log(msg)
     $('body').append(msg)
     $('#msg').css('display', 'block')
     setTimeout(function() {
-    $('#msg').remove()
+        $('#msg').remove()
     }, 3000);
     
 }

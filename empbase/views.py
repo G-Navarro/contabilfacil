@@ -187,7 +187,7 @@ class Funcionario(TemplateView):
         rpost = request.POST
         ponto = Ponto()
         if 'falta' in rpost:
-            rubrica = Rubrica.objects.get_or_create(name='Horas Faltas', cod=40)
+            rubrica = Rubrica.objects.get_or_create(emp=ua.emp, name='Horas Faltas', cod=40)
             func = ua.emp.funcionario_set.get(cod=kwargs['id'])
             falta = datetime.strptime(rpost['falta'], '%Y-%m-%d').date()
             diadetrabalho = func.diadetrabalho_set.filter(inicioem=falta)
@@ -208,7 +208,6 @@ class Funcionario(TemplateView):
                 ponto.lanca_faltas(func, falta)
                 return HttpResponseRedirect(f'{func.cod}')
         if 'datademissao' in rpost:
-            print(rpost)
             tiporescisao = Rescisao.Tipo[rpost['tiporescisao']]
             tipoaviso = rpost['tipoaviso']
             avisodemissao = datetime.strptime(rpost['avisodemissao'], '%Y-%m-%d').date() if 'avisodemissao' in rpost else None
@@ -535,7 +534,6 @@ class Tarefas(TemplateView):
             'form': form,
             'titulo': 'Tarefas',
             }
-        print(context['rescisoes'])
         if 'impid' in rget:
             imp = Imposto.objects.filter(id=rget['impid'], emp__escr=ua.escr).first()
             context['imp_edit'] = imp
@@ -606,7 +604,6 @@ class RelatorioPonto(TemplateView):
                 somavalores[nome] += valor
             else:
                 somavalores[nome] = valor
-        print(lancamentos)
         horastrabalhadas = 0
         for dia in diadetrabalho:
             horastrabalhadas += dia.horastrabalhadas
@@ -802,28 +799,34 @@ class Ponto(TemplateView):
             if diadetrabalho:
                 #faz object datetime 
                 entradaedit = datetime.strptime(rpost['entrada'], '%Y-%m-%dT%H:%M')
-                intervaloedit = datetime.strptime(rpost['intervalo'], '%Y-%m-%dT%H:%M')
-                fimintervaloedit = datetime.strptime(rpost['fimintervalo'], '%Y-%m-%dT%H:%M')
+                intervaloedit = datetime.strptime(rpost['intervalo'], '%Y-%m-%dT%H:%M') if rpost['intervalo'] else None
+                fimintervaloedit = datetime.strptime(rpost['fimintervalo'], '%Y-%m-%dT%H:%M') if rpost['fimintervalo'] else None
                 saidaedit = datetime.strptime(rpost['saida'], '%Y-%m-%dT%H:%M')
-                #atualiza horario
+                teveintervalo = intervaloedit and fimintervaloedit
                 if entradaedit.date() == dateedit:
                     diadetrabalho.entrada = entradaedit
-                if fimintervaloedit > intervaloedit:
+                if fimintervaloedit == intervaloedit and intervaloedit:
+                    diadetrabalho.intervalo = intervaloedit.replace(hour=0, minute=0, second=0)
+                    diadetrabalho.fimintervalo = fimintervaloedit.replace(hour=0, minute=0, second=0)
+                elif fimintervaloedit != intervaloedit:
                     if intervaloedit > entradaedit and intervaloedit.date() <= dateedit + timedelta(days=1): 
                         diadetrabalho.intervalo = intervaloedit
                     if fimintervaloedit.date() <= dateedit + timedelta(days=1):
                         diadetrabalho.fimintervalo = fimintervaloedit
-                elif fimintervaloedit == intervaloedit:
-                    diadetrabalho.intervalo = intervaloedit.replace(hour=0, minute=0, second=0)
-                    diadetrabalho.fimintervalo = fimintervaloedit.replace(hour=0, minute=0, second=0)
-                if saidaedit > fimintervaloedit and saidaedit.date() <= dateedit + timedelta(days=1):
+                if teveintervalo:
+                    if saidaedit >= fimintervaloedit and saidaedit.date() <= dateedit + timedelta(days=1):
+                        go = True
                     if rpost['saida'] != '00:00' or rpost['saida'] != '':
-                        #saidaedit = saidaedit.astimezone(timezone_emp)
-                        diadetrabalho.saida = saidaedit
-                        diadetrabalho.encerrado = True
-                        diadetrabalho.retificar = False
-                        diadetrabalho.lancamento_set.all().delete()
-                        self.calcula_lancametos(diadetrabalho, func.jornada, func)
+                        go = True
+                else:
+                    if saidaedit > entradaedit and saidaedit.date() <= dateedit + timedelta(days=1):
+                        go = True        
+                if go:
+                    diadetrabalho.saida = saidaedit
+                    diadetrabalho.encerrado = True
+                    diadetrabalho.retificar = False
+                    diadetrabalho.lancamento_set.all().delete()
+                    self.calcula_lancametos(diadetrabalho, func.jornada, func)
                 diadetrabalho.save()
                 return HttpResponseRedirect('ponto')
         msg = False
@@ -870,10 +873,13 @@ class Ponto(TemplateView):
         if rpost['tipo'] == 'fimintervalo':
             #checagem seguranca caso o intervalo seja no dia seguinte ao dia de inicio caso trabalhe de madrugada
             if diadetrabalho.entrou and not diadetrabalho.encerrado and diadetrabalho.inicioem <= diapost.date():
-                if diadetrabalho.intervalo > diapost:
-                    msg = 'Intervalo maior que o fim intervalo'
+                if diadetrabalho.intervalo:
+                    if diadetrabalho.intervalo > diapost:
+                        msg = 'Intervalo maior que o fim intervalo'
+                    else:
+                        diadetrabalho.fimintervalo = diapost
                 else:
-                    diadetrabalho.fimintervalo = diapost
+                    msg = 'Você deve marcar o intervalo'
                 #se for na madrugada pega o dia anterior
             elif diaanterior.entrou and not diaanterior.encerrado:
                 #checa se o dia anterior tem diadetrabalho aberto e se já não foi marcado
@@ -923,7 +929,6 @@ class Ponto(TemplateView):
         if not msg:
             if ua.comp.month != diadetrabalho.inicioem.month or ua.comp.year != diadetrabalho.inicioem.year:
                 ua = UltimoAcesso.objects.filter(user=request.user).first()
-                print(ua, type(ua.comp), ua.comp.month, '913', diadetrabalho.inicioem.month)
                 ua.comp = f'{diadetrabalho.inicioem.year}-{diadetrabalho.inicioem.month}-01'
                 ua.save()
             diadetrabalho.save() 

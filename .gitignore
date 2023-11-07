@@ -1,1 +1,5 @@
 desktop.ini
+settings.py
+empbase/migrations/*
+*.xlsx
+db.sqlite3

@@ -9,8 +9,6 @@ class UsuarioManager(BaseUserManager):
             email = self.normalize_email(email)
         other_fields.setdefault('is_staff', True)
         other_fields.setdefault('is_active', True)
-        print(email, fone, usuario, nome, snome, password, other_fields)
-        print(self.model)
         user = self.model(email=email, fone=fone, usuario=usuario, nome=nome, snome=snome, **other_fields)
         user.set_password(password)
         user.save()

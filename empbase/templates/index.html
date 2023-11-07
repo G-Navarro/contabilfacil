@@ -5,10 +5,13 @@
         <form method="post">
             <div id="login">
                 {% csrf_token %}
+                {% if msg %}
+                    <div id="msg" style="display: block;">{{ msg }}</div>
+                {% endif %}
                 <label for="usuario">Usuário</label>
                 <input id="usuario" name="usuario" type="text">
                 <label for="senha">Senha</label>
-                <input id="senha" name="senha" type="text">
+                <input id="senha" name="senha" type="password">
                 <button class="btn" type="submit">Logar</button>
             </div>
         </form>
