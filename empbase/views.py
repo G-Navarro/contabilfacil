@@ -128,7 +128,6 @@ class FuncionarioTodos(TemplateView):
             rescisoes_abertas = rescisoes.exclude(tramite__nome='Cancelado')
             rescisoes_canceladas = rescisoes.filter(tramite__nome='Cancelado')
             feriasaberta = PeriodoAquisitivo.objects.filter(func__emp=ua.emp, func__demitido=False, diasdedireito__gt=0).order_by('periodoinicio')
-            lancamentos = funcs.filter(lancamento__comp__month=ua.comp.month).distinct()
             context = {
                 'ua': ua,       
                 'titulo': 'Funcionários - ' + ua.emp.apelido,
@@ -138,8 +137,7 @@ class FuncionarioTodos(TemplateView):
                 'rescisao': Rescisao(),
                 'rescisoes_abertas': rescisoes_abertas,
                 'rescisoes_canceladas': rescisoes_canceladas,
-                'feriasaberta': feriasaberta, 
-                'lancamentos': lancamentos,               
+                'feriasaberta': feriasaberta            
             }
         else:
             context = {
@@ -581,6 +579,20 @@ class Tarefas(TemplateView):
 class RelatorioPonto(TemplateView):
     template_name = 'relatorio_ponto.html'
     def get(self, request, **kwargs):
+        ua, acesso = getUA(request.user)
+        funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
+        context = {
+            'ua': ua,
+            'funcs': funcs,
+            'titulo': 'Relatório Ponto',
+        }
+        return render(request, self.template_name, context)
+
+
+@method_decorator(login_required, name='dispatch')
+class CartaoPonto(TemplateView):
+    template_name = 'cartao_ponto.html'
+    def get(self, request, **kwargs):
         ua, acesso = getUA(request.user)            
         funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
         func = None if not funcs else funcs.filter(cod=request.GET['funcid'])[0] if 'funcid' in request.GET else funcs[0]
@@ -622,7 +634,7 @@ class RelatorioPonto(TemplateView):
             'qtedias': range(qtde_dias),
             'diadetrabalho': diadetrabalho,
             'horastrabalhadas': horastrabalhadas,
-            'titulo': 'Ponto',
+            'titulo': 'Cartão Ponto',
             }
         if 'diainicio' in request.GET and request.GET['diainicio']:
             diainicio = datetime.strptime(request.GET['diainicio'], '%Y-%m-%d')
@@ -639,7 +651,7 @@ class RelatorioPonto(TemplateView):
             diadetrabalho.encerrado = False
             diadetrabalho.retificar = True
             diadetrabalho.save()
-            return HttpResponseRedirect(f'relatorioponto?funcid={func.cod}')
+            return HttpResponseRedirect(f'cartao_ponto?funcid={func.cod}')
         #lanca faltas
         if rpost['tipo'] == 'falta':
             func = ua.emp.funcionario_set.get(cod=rpost['funcid'])
@@ -647,6 +659,7 @@ class RelatorioPonto(TemplateView):
             ponto = Ponto()
             ponto.lanca_faltas(func, falta)
             return JsonResponse({'status': 'ok'})
+        
 
 @method_decorator(login_required, name='dispatch')
 class Ponto(TemplateView):

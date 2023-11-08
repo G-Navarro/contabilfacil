@@ -1,143 +1,49 @@
 {% load static %}
 {% load hash_filters %}
-<div id="topo">
 {% include 'header.html' %}
+<div id="topo">
 {% include 'links.html' %}
 </div>
-{% if alerta %}
-{{ alerta }}
-{% else %}
-<div id="filtros">
-    <input  id="pesquisa" type="text" oninput="pesquisa(this, 'resultado_pesquisa')" placeholder="Pesquisar...">
-    <div id="resultado_pesquisa">
-        {% for funcl in funcs %}
-            <a href="{% url 'relatorioponto' %}?funcid={{ funcl.cod }}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
-        {% endfor %}
-    </div>
+<div class="abasgrupo">
+    <a href="{% url 'relatorioponto' %}"><p class="abasmenu">Relatório</p></a>
+    <a href="{% url 'cartao_ponto' %}?funcid={{ funcl.cod }}"><p class="abasmenu">Cartão Ponto</p></a>
+    <p class="abasmenu">Vale Refeição</p>
 </div>
-<div class="main_content">
-        <div style="display: flex; justify-content: space-around; margin-bottom: 0.5rem;">
-            <!--<a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>-->
-            <div>
-                <p style="text-align: center; font-size: 2rem;"><a href="{% url 'funcionarios' func.cod %}" class="nome">{{ func.cod }} - {{ func.nome }}</a></p>
-                {% if ua.comp.month == func.admissao.month and ua.comp.year == func.admissao.year %}
-                    <p class="borda padding-sm" style="margin:0.5rem auto; width: 70%; text-align: center">Admissão: {{ func.admissao|date:"d/m/Y" }}</p>
-                {% endif %}
-                {% if ua.comp.month == func.demissao.month and ua.comp.year == func.demissao.year %}
-                    <p class="borda padding-sm" style="margin:0.5rem auto; width: 70%; text-align: center">Demissão: {{ func.demissao|date:"d/m/Y" }}</p>
-                {% endif %}
-                <div style="display: flex; justify-content: space-around;">
-                    <a class="botao_seta_large" href="{% url 'relatorioponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>
-                    <a class="botao_seta_large" href="{% url 'relatorioponto' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>
-                </div>
-            </div>
-            <!--<a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>-->
-        </div>
-        <div class="flexcenter">
-            <table id="tabelaponto" class="sombra">
-                <thead>
-                    <tr>
-                        <th>Dia</th>
-                        <th>Entrada</th>
-                        <th>Intervalo</th>
-                        <th>Fim de Intervalo</th>
-                        <th>Saída</th>
-                        <th>Falta</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for diaturno in diadetrabalho %}
-                        <tr>
-                            <td {% if diaturno.encerrado %} class="diaencerrado" {% else %} class="diainicio" {% endif %}>
-                                <a href="{% url 'relatorioponto' %}?funcid={{ func.cod }}&diainicio={{ diaturno.inicioem|date:'Y-m-d' }}">{{ diaturno.inicioem|date:"D" }}  {{ diaturno.inicioem|date:"d" }} {% if diaturno.lancamento_set.all %}<span class="notificacao"></span>{% endif %}</a>
-                            </td>
-                            <td>
-                                {% if diaturno.entrada != None %}
-                                    {{ diaturno.entrada|time:"H:i" }}
-                                {% else %}
-                                    --
-                                {% endif %}
-                                </td>
-                            <td {% if diaturno.intervalo.day != diaturno.inicioem.day and diaturno.intervalo %}style="background-color: #ff9933; color:black;"{% endif %}>
-                                {% if diaturno.intervalo != None %}
-                                    {{ diaturno.intervalo|time:"H:i" }}
-                                {% else %}
-                                    --
-                                {% endif %}
-                            </td>
-                            <td {% if diaturno.fimintervalo.day != diaturno.inicioem.day and diaturno.fimintervalo %}style="background-color: #ff9933; color:black;"{% endif %}>
-                                {% if diaturno.fimintervalo != None %}
-                                    {{ diaturno.fimintervalo|time:"H:i" }}
-                                {% else %}
-                                    --
-                                {% endif %}
-                            </td>
-                            <td {% if diaturno.saida.day != diaturno.inicioem.day and diaturno.saida %}style="background-color: #ff9933; color:black;"{% endif %}>
-                                {% if diaturno.saida != None %}
-                                    {{ diaturno.saida|time:"H:i" }}
-                                {% else %}
-                                    --
-                                {% endif %}
-                            </td>
-                            {% if diaturno.lancamento_set.all|faltas %}
-                                <td>
-                                    {% with faltas=diaturno.lancamento_set.all|faltas %}
-                                        {{ faltas|calcula_minuto }}
-                                    {% endwith %}
-                                </td>
-                            {% else %}
-                                <td>
-                                    --
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div> 
-        {% if func.lancamento_set.all %}
-            <div class="borda padding-sm" style="margin: 0.5rem;">
-                <p>Total de horas = {{horastrabalhadas|calcula_minuto }}</p>
-                {% for nome, valor in somavalores.items %}
-                    <p>{{nome}} = {{valor|calcula_minuto }}</p>
-                {% endfor %}
-            </div>
-            <div class="borda padding-sm" style="margin: 0.5rem;">
-                {% for lanc in lancamentos %}
-                    <p>{{lanc.comp|date:'d/m/Y'}} {{lanc.rub.cod}} {{lanc.rub.name}} = {{lanc.valor|calcula_minuto}}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-{% endif %}
-
-{% if diadetrabalhoinfo %}
-<button class="btn-rounded-big btn-green" style="position: fixed; bottom: 0.5rem; right: 0.5rem;" onclick="mostrar(this)"><i class="fa-solid fa-plus"></i></button>
-<div class="formdisplay">
-    <div>
-        <div class="forminput_barra">
-            <button onclick="removefundo()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="formgroup">
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" id="funcid" name="funcid" value="{{ func.cod }}">
-                <input type="hidden" id="diadetrabalhoinfoinicioem" name="diadetrabalhoinfoinicioem" value="{{ diadetrabalhoinfo.inicioem|date:'d/m/Y' }}">
-                <p class="borda padding-sm">{{ diadetrabalhoinfo.inicioem|date:'d/m/Y'}}</p>
-                {% for lanc in diadetrabalhoinfo.lancamento_set.all %}
-                    <div class="padding-sm flexcenter" style="justify-content: space-between;">
-                            <p style="margin-right:0.5rem">{{ lanc.rub.cod }} - {{ lanc.rub.name }} | {{ lanc.valor|calcula_minuto }}</p> <p class="btn btn-red" onclick="excluir_lancamento('{{lanc.id}}')"><i class="fa-solid fa-trash-can"></i></p>
+<div>
+    {% for func in funcs %}
+        <div class="borda padding-sm margin-sm">
+            <a href="{% url 'cartao_ponto' %}?funcid={{ func.cod }}" {% if func.demitido %}style="color:#ff3333"{% endif %}>
+                {{ func.cod }} - {{ func.nome }}{% if func.demitido %} - Demitido em: {{ func.demissao|date:"d/m/Y" }}{% endif %}
+            </a>
+            <div class="lancamentos">
+                {% with lanc=func.lancamento_set.all|lancamentos:ua %}
+                    <div class="margin-sm">
+                        <p class="titulo">Horas extras</p>
+                        <p>{{ lanc.horas_extras }}</p>
                     </div>
-                {% endfor %}
-                <button class="btn" type="submit">Permitir Alteração</button>
-                <input type="hidden" id="datafalta" name="datafalta" value="{{ diadetrabalhoinfo.inicioem|date:'d/m/Y' }}">
-                <span class="btn btn-red" onclick="marca_falta()">Falta</span>
-                <span class="btn btn-yellow" onclick="marca_folga()">Folga</span>
-            </form>
+                    <div class="margin-sm">
+                        <p class="titulo">Adic. Noturno</p>
+                        <p>{{ lanc.adic_noturno }}</p>
+                    </div>
+                    <div class="margin-sm">
+                        <p class="titulo">Intrajornada</p>
+                        <p>{{ lanc.intrajornada }}</p>
+                    </div>
+                    <div class="margin-sm">
+                        <p class="titulo">Horas faltas</p>
+                        <p>{{ lanc.horasfaltas }}</p>
+                    </div>
+                    <div class="margin-sm">
+                        <p class="titulo">Vale Transporte</p>
+                        <p>{{ lanc.valetrasnporte }}</p>
+                    </div>
+                    <div class="margin-sm">
+                        <p class="titulo">Vale refeição</p>
+                        <p>{{ lanc.valerefeicao }}</p>
+                    </div>
+                {% endwith %}
+            </div>
         </div>
-    </div>
+    {% endfor %}
 </div>
-<div id="fundo" onclick="removefundo()"></div>
-{% endif %}
-<script src="{% static 'js/marcaponto.js' %}"></script>
 {% include 'footer.html' %}

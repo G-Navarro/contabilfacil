@@ -324,14 +324,22 @@ function pesquisa(obj, id) {
 showmenu = ()=> {
     height = $('#links').height()
     toplinks = document.getElementById("links").getBoundingClientRect()['y']
-    console.log(toplinks + height)
     if ($('#conteudomenu').css('display') == 'none'){
         $('#conteudomenu').css('display', 'block')
-        $('#conteudomenu').css('top', toplinks + 46.78 + 'px')
+        fundo = converthtml(`<div id="fundo"></div>`)
+        $('body').append(fundo)
+        $('#fundo').click(() => {
+            showmenu()
+            removefundo()
+        })
     } else {
         $('#conteudomenu').css('display', 'none')
-        $('#conteudomenu').css('top', toplinks + 46.78 + 'px')
+        removefundo()
     }
+    $(window).resize(() => {
+        $('#conteudomenu').css('display', 'none')
+        removefundo()
+    })
 }
 
 showmsg = (msg) => {

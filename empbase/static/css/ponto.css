@@ -11,6 +11,12 @@
   width: 3rem;
   padding: 0.25rem;
 }
+.lancamentos{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
 .nome{
   color: #e4e6e7;

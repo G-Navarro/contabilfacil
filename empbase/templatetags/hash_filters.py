@@ -1,6 +1,7 @@
 import datetime
 from django import template
 import hashlib
+from django.db.models import Sum
 
 register = template.Library()
 
@@ -85,4 +86,24 @@ def soma_lancamentos(lancamentos, ua):
             somavalores[nome] = valor
     print(somavalores)
     return somavalores
+
+
+@register.filter()
+def lancamentos(lancamentos, ua):
+    lancamentos = lancamentos.filter(comp__year=ua.comp.year, comp__month=ua.comp.month).order_by('comp')
+    horas_extras = lancamentos.filter(rub__cod=150).aggregate(Sum('valor'))
+    adic_noturno = lancamentos.filter(rub__cod=25).aggregate(Sum('valor'))
+    intrajornada = lancamentos.filter(rub__cod=201).aggregate(Sum('valor'))
+    horasfaltas = lancamentos.filter(rub__cod=40).aggregate(Sum('valor'))
+    valetrasnporte = lancamentos.filter(rub__cod=48).aggregate(Sum('valor'))
+    valerefeicao = lancamentos.filter(rub__cod=205).aggregate(Sum('valor'))
+    lancamentos = {
+        'horas_extras' : calcula_minuto(horas_extras['valor__sum']) if horas_extras['valor__sum'] else '--',
+        'adic_noturno' : calcula_minuto(adic_noturno['valor__sum']) if adic_noturno['valor__sum'] else '--',
+        'intrajornada' : calcula_minuto(intrajornada['valor__sum']) if intrajornada['valor__sum'] else '--',
+        'horasfaltas' : calcula_minuto(horasfaltas['valor__sum']) if horasfaltas['valor__sum'] else '--',
+        'valetrasnporte' : int(valetrasnporte['valor__sum']) if valetrasnporte['valor__sum'] else '--',
+        'valerefeicao' : int(valerefeicao['valor__sum']) if valerefeicao['valor__sum'] else '--',
+    }
+    return lancamentos
     

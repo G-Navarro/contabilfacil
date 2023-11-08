@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from envioemails.views import Envioemails
-from empbase.views import AlteraSenha, FuncionarioTodos, Index, Funcionario, Empresas, Notas, Obras, Alocacao, Impostos, Pagamentos, Ponto, RelatorioPonto, Tarefas, Usuarios, cadastrar, buscadados, alocacao_edit, logout_view, tramite_altera
+from empbase.views import AlteraSenha, CartaoPonto, FuncionarioTodos, Index, Funcionario, Empresas, Notas, Obras, Alocacao, Impostos, Pagamentos, Ponto, RelatorioPonto, Tarefas, Usuarios, cadastrar, buscadados, alocacao_edit, logout_view, tramite_altera
 
 urlpatterns = [
     path('ecp/', admin.site.urls),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('impostos', Impostos.as_view(), name='impostos'),
     path('ponto', Ponto.as_view(), name='ponto'),
     path('relatorioponto', RelatorioPonto.as_view(), name='relatorioponto'),
+    path('cartao_ponto', CartaoPonto.as_view(), name='cartao_ponto'),
     path('pagamentos', Pagamentos.as_view(), name='pagamentos'),
     path('funcionarios', FuncionarioTodos.as_view(), name='funcionarios'),
     path('funcionarios/<int:id>', Funcionario.as_view(), name='funcionarios'),
