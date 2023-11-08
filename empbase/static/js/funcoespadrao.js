@@ -335,7 +335,7 @@ showmenu = ()=> {
     } else {
         $('#conteudomenu').css('display', 'none')
         removefundo()
-    }
+    } 
     $(window).resize(() => {
         $('#conteudomenu').css('display', 'none')
         removefundo()

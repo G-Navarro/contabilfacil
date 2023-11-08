@@ -18,7 +18,7 @@
         {% for funcl in funcs %}
             <a href="{% url 'cartao_ponto' %}?funcid={{ funcl.cod }}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
         {% endfor %}
-    </div>
+    </div> 
 </div>
 <div class="main_content">
         <div style="display: flex; justify-content: space-around; margin-bottom: 0.5rem;">

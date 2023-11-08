@@ -10,7 +10,8 @@
   text-align: center;
   width: 3rem;
   padding: 0.25rem;
-}
+} 
+
 .lancamentos{
   display: flex;
   justify-content: space-around;

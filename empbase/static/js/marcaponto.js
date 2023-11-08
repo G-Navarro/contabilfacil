@@ -129,7 +129,7 @@ $('#retificarponto').hover(()=> {
     showmsg('Hora da saída não pode ser 00:00');
   }
   else if (entrada > intervalo && intervalo != fimintervalo) {
-    showmsg('Entrada não pode ser maior que o início do intervalo');
+    showmsg('Entrada não pode ser maior que o início do intervalo'); 
   } 
   else if (intervalo > fimintervalo && fimintervaloh != '00:00') {
     showmsg('Início intervalo não pode ser maior que o fim do intervalo');

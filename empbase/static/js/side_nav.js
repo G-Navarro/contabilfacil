@@ -19,7 +19,7 @@ try{
         $('#content_right').css('margin-left', '0');
         $('#pesquisa').css('display', 'none');
         $('#esconde_left').css('margin-left', marginLeft);        
-        $('#esconde_left').css('bottom', marginLeft);        
+        $('#esconde_left').css('bottom', marginLeft);         
         $('#esconde_left').css('position', 'fixed');
       } else {
         $('#content_left').css('width', '20rem');

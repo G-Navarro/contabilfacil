@@ -15,7 +15,7 @@
                 extensao = converthtml(`<div id="extensao" style="height: ${body_h - window_h }px"></div>`)
                 $('body').append(extensao)
             }
-        }
+        } 
     } else {
         $('#links').removeClass('links_fix')
         $('#topo').css('margin-bottom', '0px')

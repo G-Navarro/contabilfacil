@@ -16,7 +16,7 @@ divdropArea.on("dragleave", function(event) {
 
 processaarquivo = () => {
     loading = converthtml("<div id=blackout><span class='loader'></span></div>")
-    $('body').append(loading)
+    $('body').append(loading) 
     divdropArea.append(loading)
     inputfile = $('#arquivo')
     inputfile = inputfile[0].files[0]

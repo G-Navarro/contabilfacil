@@ -67,7 +67,7 @@
     {% endif %}
     {% if not user.eh_auxiliar and not user.eh_funcionario %}
         <a href="{% url 'usuarios' %}">Usuários</a>
-    {% endif %}
+    {% endif %} 
     <div>
         <a href="{% url 'logout' %}">{{ user.nome }} | Logout</a>
     </div>

@@ -67,7 +67,7 @@
         <div class="accordion-main flexstart">
             <p>{{ func.cod }} - {{ func.nome }} | {{ func.admissao|date:"d/m/Y" }} {% if func.demitido %} -  <span style="color:#ff3333"> Demitido: {{ func.demissao|date:"d/m/Y" }}</span> {% endif %}</p>
         </div>
-        <div class="accordion-content hidden">
+        <div class="accordion-content hidden"> 
             {% with alocs=func.alocacao_set.all|alocacoes:ua %}
                 {% if not alocs %}
                     <p>Nenhuma alocação cadastrada</p>

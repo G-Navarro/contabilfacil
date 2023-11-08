@@ -235,7 +235,7 @@ class Funcionario(TemplateView):
                 rescisao.tramite.add(Tramites.objects.create(emp=ua.emp, nome='Seguro Desemprego'))
             rescisao.tramite.add(Tramites.objects.create(emp=ua.emp, nome='Esocial'))
             rescisao.tramite.add(Tramites.objects.create(emp=ua.emp, nome='Finalizado'))
-            func.demitido = True
+            func.demitido = True 
             func.demissao = datademissao
             func.save()
             return HttpResponseRedirect(f'{func.cod}')
