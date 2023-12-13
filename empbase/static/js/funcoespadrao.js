@@ -364,3 +364,19 @@ alakazam = (id) => {
         removefundo()
     })
 }
+
+function pesquisa_alvo(obj) {
+    var alvo = $(obj)
+    var class_alvo = alvo.attr('id').split('_')[1];
+    var inputValue = $(alvo).val().toLowerCase()
+    $('.pesquisa_alvo').each(function() {
+        campo_alvo = $(this).find(`.${class_alvo}`)[0].outerText;
+        campo_alvo = campo_alvo.toLowerCase()
+        console.log(inputValue, campo_alvo)
+        if (campo_alvo.includes(inputValue)) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+}

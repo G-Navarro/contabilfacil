@@ -8,11 +8,11 @@
     </div>
     <div class="accordion-content hidden">
         <div style="margin: 0.5rem; display: flex;align-items: stretch;justify-content: space-between;">
-            <input type="text" class="pesquisafuncl" name="pesquisa_cod" id="pesquisa_cod" placeholder="Código">
-            <input type="text" class="pesquisafuncl" name="pesquisa_nome" id="pesquisa_nome" placeholder="Nome">
-            <input type="date" class="pesquisafuncl" name="pesquisa_admissao" id="pesquisa_admissao" placeholder="Admissao">
-            <input type="text" class="pesquisafuncl" name="pesquisa_cargo" id="pesquisa_cargo" placeholder="Cargo">
-            <input type="text" class="pesquisafuncl" name="pesquisa_salario" id="pesquisa_salario" placeholder="Salário">
+            <input type="text" name="pesquisa_cod" id="pesquisa_cod" placeholder="Código" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_nome" id="pesquisa_nome" placeholder="Nome" oninput="pesquisa_alvo(this)">
+            <input type="date" name="pesquisa_admissao" id="pesquisa_admissao" placeholder="Admissao" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_cargo" id="pesquisa_cargo" placeholder="Cargo" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_salario" id="pesquisa_salario" placeholder="Salário" oninput="pesquisa_alvo(this)">
         </div>
     </div>
 </div>
@@ -20,8 +20,7 @@
 <div class="abasgrupo">
     <p class="abasmenu abaativa">Funcionários</p>
     <p class="abasmenu">Rescisões</p>
-    <p class="abasmenu">Férias</p>    
-    <p class="abasmenu">Lançamentos</p>  
+    <p class="abasmenu">Férias</p>
 </div>
 <div class="abas">
     {% if user.is_superuser %}
@@ -47,29 +46,29 @@
         <p class="borda msg">Nenhum funcionário cadastrado</p>
     {% else %}
         {% for func in funcs %}
-                <div class="borda flexbetween padding-sm sombra" style="margin: 0.5rem;">
-                    <div class="cod">
+                <div class="borda flexbetween padding-sm sombra pesquisa_alvo" style="margin: 0.5rem;">
+                    <div>
                         <a href="{% url 'funcionarios' func.cod %}">
                             <div style="color: #f2f2f2; text-align: center;">
-                                <i class="fa-solid fa-address-card"></i> <span>{{ func.cod }}</span>
+                                <i class="fa-solid fa-address-card"></i> <span class="cod">{{ func.cod }}</span>
                             </div>
                         </a>
                     </div>  
-                    <div class="nome">
+                    <div>
                         <span>
-                            <a href="{% url 'funcionarios' func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}>
+                            <a href="{% url 'funcionarios' func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}  class="nome">
                                 {{ func.nome }} {% if func.demitido %} - {{ func.demissao|date:"d/m/Y" }}{% endif %}
                             </a>
                         </span>
                     </div>
-                    <div class="admissao">
-                        <span>Admissão: </span><br><span>{{ func.admissao|date:"d/m/Y" }}</span>
+                    <div>
+                        <span>Admissão: </span><br><span class="admissao">{{ func.admissao|date:"d/m/Y" }}</span>
                     </div>
-                    <div class="cargo">
-                        <span>Cargo: </span><br><span>{{ func.cargo }}</span>
+                    <div>
+                        <span>Cargo: </span><br><span class="cargo">{{ func.cargo }}</span>
                     </div>
-                    <div class="salario">
-                        <span>Salário: </span><br><span>{{ func.salario }}</span>
+                    <div>
+                        <span>Salário: </span><br><span class="salario">{{ func.salario }}</span>
                     </div>
                 </div>
         {% endfor %}
@@ -178,19 +177,6 @@
         {% endfor %}
     </div>
 </div> 
-
-<div class="abas hidden">
-    {% for func in lancamentos %}
-        <div class="padding-sm borda sombra" style="margin: 0.5rem">
-            <p class="margin-sm"><a href="{% url 'funcionarios' func.cod %}" class="btn">{{ func.cod }}</a> {{ func.nome }}</p>
-            {% with lancamento=func.lancamento_set.all|soma_lancamentos:ua %}
-                {% for nome, valor in lancamento.items %}
-                    <p>{{ nome }} = {{ valor|calcula_minuto }}</p>
-                {% endfor %}
-            {% endwith %}
-        </div>
-    {% endfor %}
-</div>
 {% include 'footer.html' %}
 <script src="{% static 'js/funcionarios.js' %}"></script>
 <script src="{% static 'js/processa.js' %}"></script>

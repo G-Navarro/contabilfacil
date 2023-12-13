@@ -7,7 +7,7 @@ from datetime import date, time, timedelta, datetime
 from empbase.forms import FuncionarioForm, ImpostoForm
 from django.forms.models import model_to_dict
 from empbase.imports import cad_imposto, criar_empresa, criar_funcionario, baixanotas, criar_obra, subs
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.dispatch import receiver
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -289,6 +289,7 @@ class Pagamentos(TemplateView):
     def get(self, request, **kwargs):
         ua, acesso = getUA(request.user)            
         holerites = ua.emp.holerite_set.filter(comp=ua.comp)
+        print(holerites)
         funcs = ua.emp.funcionario_set.filter(demitido=False).filter(admissao__lte=ua.comp)
         if not holerites and funcs:
             #cria adiantamento
@@ -330,6 +331,7 @@ class Pagamentos(TemplateView):
         if pagamento13:
             pagamento13 = pagamento13.funcs.get_queryset().order_by('func__nome')
             context['pagamento13'] = pagamento13.order_by('pago')
+        print(context)
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
@@ -350,26 +352,21 @@ class Notas(TemplateView):
     
     def get(self, request, **kwargs):
         ua, acesso = getUA(request.user)
-        notas = ua.emp.notas_set.filter(comp__year=ua.comp.year)
-        notas = notas.filter(comp__month=ua.comp.month)
-        notas = notas.order_by('-numero')
-        total = 0
-        inss = 0
-        iss = 0 
-
-        active = ''
-        if 'id' in request.GET:
-            alterar = ua.emp.notas_set.get(id=request.GET['id'])
-            active = 'active'
-        else:
-            alterar = ua.emp.notas_set.last()
-
-        for nota in notas:
-            total += nota.valor
-            inss += nota.inss
-            iss += nota.iss
-        if len(notas) == 0:
+        notas = ua.emp.notas_set.filter(comp__year=ua.comp.year, comp__month=ua.comp.month).order_by('-numero')
+        if not notas:
             notas = None
+        else:
+            notassoma = notas.exclude(canc=1)
+            total = notassoma.aggregate(Sum('valor'))['valor__sum']
+            inss = notassoma.aggregate(Sum('inss'))['inss__sum']
+            iss = notassoma.aggregate(Sum('iss'))['iss__sum']
+            print(notassoma, total, inss, iss)
+            active = ''
+            if 'id' in request.GET:
+                alterar = ua.emp.notas_set.get(id=request.GET['id'])
+                active = 'active'
+            else:
+                alterar = ua.emp.notas_set.last()        
         
         context = {
             'ua': ua,

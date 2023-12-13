@@ -75,19 +75,3 @@ $('#inicioferias').on('input', function() {
     }
     }, 500)})
 
-$('.pesquisafuncl').on('input', function() {
-        var inputId = $(this).attr('id');
-        console.log(inputId)
-        var classAlvo = inputId.split('_')[1];
-        
-        $('.' + classAlvo).each(function() {
-        var inputText = $('.pesquisafuncl#' + inputId).val();
-        var elementText = $(this).text();
-        
-        if (elementText.indexOf(inputText) === -1) {
-            $(this).parent('.parent.borda').hide();
-        } else {
-            $(this).parent('.parent.borda').show();
-        }
-        });
-});

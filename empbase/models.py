@@ -19,6 +19,19 @@ class Tramites(Base):
     observacao = models.TextField(null=True, blank=True)
 
 
+class Competencia(models.Model):
+    emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    nome = models.CharField(max_length=100)
+    comp = models.DateField()
+    finalizada = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.emp.cod} - {self.nome} - {self.comp}'
+    
+    class Meta:
+        ordering = ['emp', 'comp']
+
+
 class Contribuintes(Base):
     nome = models.CharField(max_length=200)
 
@@ -53,7 +66,7 @@ class Escritorio(models.Model):
 
 
 class Empresa(Base):
-    cod = models.IntegerField(unique=True)
+    cod = models.IntegerField()
     cnpj = models.CharField(max_length=30, unique=True)
     inscest = models.CharField(max_length=30, blank=True, null=True)
     inscmun = models.CharField(max_length=30, blank=True, null=True)
@@ -84,6 +97,8 @@ class Empresa(Base):
     def __str__(self):
         return f'{self.cod} - {self.apelido}'
 
+    class Meta:
+        ordering = ['escr', 'cod']
 
 class Turno(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
@@ -149,8 +164,11 @@ class Funcionario(Base):
     funcacesso = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.cod} - {self.nome}'
-    
+        return f'{self.emp.cod} - {self.cod} - {self.nome}'
+
+    class Meta:
+        ordering = ['emp', 'cod']
+
 
 class PeriodoAquisitivo(Base):
     def datamaxima_calc(self, periodofim):
@@ -203,6 +221,7 @@ class Rescisao(Base):
     def __str__(self):
         return f'{self.func.cod} - {self.tiporescisao} - {self.final}'
 
+
 class Pagamento(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
     pago = models.BooleanField(default=False)
@@ -218,6 +237,7 @@ class Holerite(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     tipo = models.CharField(max_length=18, choices=Tipo.choices)
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     enviado = models.BooleanField(default=False)
     funcs = models.ManyToManyField(Pagamento)
 
@@ -241,6 +261,7 @@ class Obras(Base):
 
 class DiaDeTrabalho(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
+    comp = models.ForeignKey(Competencia, on_delete=models.CASCADE, blank=True, null=True)
     inicioem = models.DateField(null=True, blank=True)
     entrou = models.BooleanField(default=False)
     encerrado = models.BooleanField(default=False)
@@ -271,6 +292,7 @@ class Lancamento(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
     valor = models.FloatField(default=0)
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     diatrabalhado = models.ForeignKey(DiaDeTrabalho, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
@@ -282,10 +304,14 @@ class Notas(Base):
     numero = models.IntegerField()
     canc = models.IntegerField()
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     valor = models.FloatField()
     inss = models.FloatField()
     iss = models.FloatField()
     tomador = models.ForeignKey(Obras, on_delete=models.DO_NOTHING)
+
+    def __str__(self):
+        return f'{self.tomador} | {self.comp}'
 
 
 class Alocacao(Base):
@@ -294,6 +320,7 @@ class Alocacao(Base):
     obra = models.ForeignKey(Obras, on_delete=models.DO_NOTHING)
     func = models.ManyToManyField(Funcionario)
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return f'{self.obra} | {self.comp}'
@@ -304,11 +331,14 @@ class UltimoAcesso(models.Model):
     emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
     user = models.OneToOneField(Usuario, on_delete=models.DO_NOTHING)
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     atualizado = models.DateField(auto_now=True)
 
     def __str__(self):
         return f'{self.emp} - {self.user} - {self.comp}'
 
+    class Meta:
+        ordering = ['emp', 'comp']
 
 class TemAcesso(models.Model):
     escr = models.ManyToManyField(Escritorio)
@@ -316,15 +346,90 @@ class TemAcesso(models.Model):
     user = models.OneToOneField(Usuario, on_delete=models.DO_NOTHING)
     atualizado = models.DateField(auto_now=True)
 
+    def __str__(self):
+        return f'{self.user}'
+
+    class Meta:
+        ordering = ['user']
+
 
 class Imposto(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     nome = models.CharField(max_length=80)
     valor = models.FloatField()
     comp = models.DateField()
+    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     vcto = models.DateField(null=True, blank=True)
     enviado = models.BooleanField(default=False)
     pago = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.emp} - {self.nome} - {self.valor} - {self.comp}'
+
+'''from datetime import datetime
+from empbase.models import Empresa, Contribuintes, Escritorio
+
+escr = Escritorio.objects.get(nome='Escritório Exemplo')
+def create_empresa(cod, cnpj, inscest, inscmun, inscjunta, apelido, nome, rsocial, natjuridica, inicio, tipoend, endereco, num, bairro, municipio, uf, pais, cep, cnae, capital, email, situacao, formaenvio, paga_vr, exonera_folha, escr):
+    return Empresa.objects.create(
+        cod=cod,
+        cnpj=cnpj,
+        inscest=inscest,
+        inscmun=inscmun,
+        inscjunta=inscjunta,
+        apelido=apelido,
+        nome=nome,
+        rsocial=rsocial,
+        natjuridica=natjuridica,
+        inicio=inicio,
+        tipoend=tipoend,
+        endereco=endereco,
+        num=num,
+        bairro=bairro,
+        municipio=municipio,
+        uf=uf,
+        pais=pais,
+        cep=cep,
+        cnae=cnae,
+        capital=capital,
+        email=email,
+        situacao=situacao,
+        formaenvio=formaenvio,
+        paga_vr=paga_vr,
+        exonera_folha=exonera_folha,
+        escr=escr
+    )
+
+# Example usage:
+contribuinte_example = Contribuintes.objects.first()  # replace with your actual logic to get a Contribuintes object
+escritorio_example = Escritorio.objects.first()  # replace with your actual logic to get an Escritorio object
+
+create_empresa(
+    cod=192,
+    cnpj="12345678000259",
+    inscest="123456789",
+    inscmun="123456789",
+    inscjunta="123456789",
+    apelido="Peter Pão Inc.",
+    nome="Nome Empresa 1",
+    rsocial="Razão Social 1",
+    natjuridica="Ltda",
+    inicio=datetime.now(),
+    tipoend="Rua",
+    endereco="Endereço da Empresa 1",
+    num="123",
+    bairro="Bairro Empresa 1",
+    municipio="Cidade Empresa 1",
+    uf="SP",
+    pais="Brasil",
+    cep="12345678",
+    cnae="9876543",
+    capital=100000.00,
+    email="empresa1@example.com",
+    situacao="Ativa",
+    formaenvio="2",
+    paga_vr=False,
+    exonera_folha=False,
+    escr=escr
+)
+'''

@@ -4,32 +4,8 @@ import numpy as np
 from django.db.models import F
 from xml.dom.minidom import parse
 from openpyxl.utils import get_column_letter
-from xls2xlsx import XLS2XLSX
-from empbase.models import Alocacao, Funcionario, Empresa, Imposto, Notas, Obras, Contribuintes, PeriodoAquisitivo, TemAcesso, Tramites, Turno, UltimoAcesso, ValeTransporte
+from empbase.models import Alocacao, Competencia, Funcionario, Empresa, Imposto, Notas, Obras, Contribuintes, PeriodoAquisitivo, TemAcesso, Tramites, Turno, UltimoAcesso, ValeTransporte
 from usuarios.models import Usuario
-
-def xls_to_xlsx(xls_file_path, sheet_name='Sheet1'):
-    # Read the .xls file into a pandas DataFrame
-    xls_data = pd.read_excel(xls_file_path, sheet_name=sheet_name)
-
-    # Convert the DataFrame to .xlsx format in memory
-    xlsx_data = io.BytesIO()
-    with pd.ExcelWriter(xlsx_data, engine='xlsxwriter') as writer:
-        xls_data.to_excel(writer, index=False, sheet_name=sheet_name)
-        writer.save()
-
-    # Reset the buffer position
-    xlsx_data.seek(0)
-
-    # Use the converted .xlsx data as needed (e.g., pass it to another function)
-    # For example, you can read the converted data using pandas again:
-    xlsx_df = pd.read_excel(xlsx_data, sheet_name=sheet_name)
-
-    # Close the buffer
-    xlsx_data.close()
-
-    # Return the converted DataFrame
-    return xlsx_df
 
 def lerexcel(nome):
     df = pd.read_excel(nome, header=None)
@@ -49,14 +25,8 @@ def convertedata(data):
     data = f'{data[2]}-{data[1]}-{data[0]}'
     return data
 
-def convertxlsx(arq):
-    x2x = XLS2XLSX(arq)
-    wb = x2x.to_xlsx()
-    return wb
 
 def criar_empresa(arq, usuario):
-    if not '.xlsx' in arq.name:
-        arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
     col = pd.read_excel(arq, usecols='a')
     escritorio = usuario.ultimoacesso.escr
@@ -135,8 +105,6 @@ def cria_ferias(periodo, inicio, final):
 
 
 def criar_funcionario(arq, usuario):
-    if not '.xlsx' in arq.name:
-        arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
     if type(df.loc[2, 'F']) == str:
         if 'RELACAO PARA COMPRA' in df.loc[2, 'F']:
@@ -292,8 +260,6 @@ def criar_funcionario(arq, usuario):
 
 
 def criar_obra(arq, usuario):
-    if not '.xlsx' in arq.name:
-        arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
     col = pd.read_excel(arq, usecols='b')
     emp = str(df.loc[17, 'I']).replace('.0', '')
@@ -368,8 +334,6 @@ def baixanotas(arquivo, usuario):
         iss = nf.getElementsByTagName('ValorIss')[0].firstChild.nodeValue
         if numero in canceladalist:
             canc = 1
-            valor = 0
-            inss = 0
         try:
             cnpjtom = nf.getElementsByTagName('Cnpj')[2].firstChild.nodeValue
         except IndexError:
@@ -426,9 +390,12 @@ def baixanotas(arquivo, usuario):
                 nota.save()  
         except:
             nota = emp.notas_set.create(emp=emp, numero=numero, canc=canc, comp=comp, valor=valor, inss=inss, iss=iss, tomador=servico)
-            aloc = emp.alocacao_set.filter(obra=servico, comp=comp[0:7]+'01')
-            if not aloc: 
-                Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp[0:7]+'01')
+        print(comp, type(comp))
+        aloc = emp.alocacao_set.filter(obra=servico, comp=comp[0:7]+'-01')
+        if not aloc: 
+            compet, competcria = Competencia.objects.get_or_create(emp=emp, nome="alocacoes", comp=comp[0:7]+'-01')            
+            Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp[0:7]+'-01', compet=compet if compet else competcria)
+
     return emp, comp
 
 class conferencia():
@@ -446,9 +413,6 @@ def cria_imposto(emp, nome, valor, comp):
 
 
 def cad_imposto(arq, user):
-    #arq = 'Y:\_Arquivo_envio\Resumo Mensal.xlsx'
-    if not '.xlsx' in arq.name:
-        arq = xls_to_xlsx(arq)
     df = lerexcel(arq)
     col = pd.read_excel(arq, usecols='a')
     confere = conferencia()
