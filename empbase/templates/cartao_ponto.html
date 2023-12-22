@@ -8,15 +8,15 @@
 {{ alerta }}
 {% else %}
 <div class="abasgrupo">
-    <a href="{% url 'relatorioponto' %}"><p class="abasmenu">Relatório</p></a>
-    <a href="{% url 'cartao_ponto' %}?funcid={{ funcl.cod }}"><p class="abasmenu">Cartão Ponto</p></a>
+    <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-y' %}"><p class="abasmenu">Relatório</p></a>
+    <a href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ funcl.cod }}"><p class="abasmenu">Cartão Ponto</p></a>
     <p class="abasmenu">Vale Refeição</p>
 </div>
 <div id="filtros">
     <input  id="pesquisa" type="text" oninput="pesquisa(this, 'resultado_pesquisa')" placeholder="Pesquisar...">
     <div id="resultado_pesquisa">
         {% for funcl in funcs %}
-            <a href="{% url 'cartao_ponto' %}?funcid={{ funcl.cod }}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
+            <a href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ funcl.cod }}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
         {% endfor %}
     </div> 
 </div>
@@ -24,7 +24,7 @@
         <div style="display: flex; justify-content: space-around; margin-bottom: 0.5rem;">
             <!--<a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>-->
             <div>
-                <p style="text-align: center; font-size: 2rem;"><a href="{% url 'funcionarios' func.cod %}" class="nome">{{ func.cod }} - {{ func.nome }}</a></p>
+                <p style="text-align: center; font-size: 2rem;"><a href="{% url 'funcionarios' ua.emp.cod func.cod %}" class="nome">{{ func.cod }} - {{ func.nome }}</a></p>
                 {% if ua.comp.month == func.admissao.month and ua.comp.year == func.admissao.year %}
                     <p class="borda padding-sm" style="margin:0.5rem auto; width: 70%; text-align: center">Admissão: {{ func.admissao|date:"d/m/Y" }}</p>
                 {% endif %}
@@ -32,8 +32,8 @@
                     <p class="borda padding-sm" style="margin:0.5rem auto; width: 70%; text-align: center">Demissão: {{ func.demissao|date:"d/m/Y" }}</p>
                 {% endif %}
                 <div style="display: flex; justify-content: space-around;">
-                    <a class="botao_seta_large" href="{% url 'cartao_ponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>
-                    <a class="botao_seta_large" href="{% url 'cartao_ponto' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>
+                    <a class="botao_seta_large" href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>
+                    <a class="botao_seta_large" href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
             <!--<a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncseguinte }}"><i class="fa-solid fa-arrow-right"></i></a>-->
@@ -54,7 +54,7 @@
                     {% for diaturno in diadetrabalho %}
                         <tr>
                             <td {% if diaturno.encerrado %} class="diaencerrado" {% else %} class="diainicio" {% endif %}>
-                                <a href="{% url 'cartao_ponto' %}?funcid={{ func.cod }}&diainicio={{ diaturno.inicioem|date:'Y-m-d' }}">{{ diaturno.inicioem|date:"D" }}  {{ diaturno.inicioem|date:"d" }} {% if diaturno.lancamento_set.all %}<span class="notificacao"></span>{% endif %}</a>
+                                <a href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ func.cod }}&diainicio={{ diaturno.inicioem|date:'Y-m-d' }}">{{ diaturno.inicioem|date:"D" }}  {{ diaturno.inicioem|date:"d" }} {% if diaturno.lancamento_set.all %}<span class="notificacao"></span>{% endif %}</a>
                             </td>
                             <td>
                                 {% if diaturno.entrada != None %}

@@ -48,7 +48,7 @@
         {% for func in funcs %}
                 <div class="borda flexbetween padding-sm sombra pesquisa_alvo" style="margin: 0.5rem;">
                     <div>
-                        <a href="{% url 'funcionarios' func.cod %}">
+                        <a href="{% url 'funcionarios' func.emp.cod func.cod %}">
                             <div style="color: #f2f2f2; text-align: center;">
                                 <i class="fa-solid fa-address-card"></i> <span class="cod">{{ func.cod }}</span>
                             </div>
@@ -56,7 +56,7 @@
                     </div>  
                     <div>
                         <span>
-                            <a href="{% url 'funcionarios' func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}  class="nome">
+                            <a href="{% url 'funcionarios' func.emp.cod func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}  class="nome">
                                 {{ func.nome }} {% if func.demitido %} - {{ func.demissao|date:"d/m/Y" }}{% endif %}
                             </a>
                         </span>
@@ -83,7 +83,7 @@
         <div class="accordion-content" style="max-height: max-content;">
             {% for demissao in rescisoes_abertas %}
                 <div class="padding-sm borda sombra margin-sm">
-                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.emp.cod demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
                     <p><span class="titulo">Tipo rescisao:</span> 
                         {{ demissao.tiporescisao }}
                     </p>
@@ -120,7 +120,7 @@
             <div class="accordion-content hidden" style="max-height: max-content;">
             {% for demissao in rescisoes_canceladas %}
                 <div class="padding-sm borda sombra margin-sm">
-                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+                    <p class="margin-sm"><a href="{% url 'funcionarios' demissao.func.emp.cod demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
                     <p><span class="titulo">Tipo rescisao:</span> 
                         {{ demissao.tiporescisao}}
                     </p>
@@ -154,7 +154,7 @@
     <div>
         {% for ferias in feriasaberta %}
             <div class="padding-sm borda sombra" style="margin: 0.5rem">
-                <p><p class="margin-sm"><a href="{% url 'funcionarios' ferias.func.cod %}" class="btn">{{ ferias.func.cod }}</a> {{ ferias.func.nome }}</p>
+                <p><p class="margin-sm"><a href="{% url 'funcionarios' ferias.func.emp.cod ferias.func.cod %}" class="btn">{{ ferias.func.cod }}</a> {{ ferias.func.nome }}</p>
                 <p><span class="titulo">Período Aquisitivo:</span> {{ ferias.periodoinicio|date:"d/m/Y" }} - {{ ferias.periodofim|date:"d/m/Y" }}</p>
                 <p><span class="titulo">Dias de direito: </span>{{ ferias.diasdedireito }}</p>
                 <p><span class="titulo">Data máxima para iniciar:</span> {{ ferias.datamaxima|date:"l" }} - {{ ferias.datamaxima|date:"d/m/Y" }}</p>

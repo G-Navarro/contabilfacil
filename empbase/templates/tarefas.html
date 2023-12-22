@@ -112,7 +112,7 @@
                 {% for imp in imp %}
                     {% if imp.comp == ua.comp %}
                         <div class="borda sombra" style="padding: 0.3rem; margin: 0.5rem;">
-                            <a href="{% url 'tarefas' %}?impid={{ imp.id }}"><p class="links_padrao">{{ imp.nome }}</p></a>
+                            <a href="{% url 'tarefas' ua.emp.cod ua.comp|date:'m-y' %}?impid={{ imp.id }}"><p class="links_padrao">{{ imp.nome }}</p></a>
                             <p>Competência: {{ imp.comp.month }}/{{ imp.comp.year }} </p>
                             <p>R$ {{ imp.valor }}</p>
                             <p>VCTO: {{ imp.vcto|date:"d/m/Y" }}</p>   

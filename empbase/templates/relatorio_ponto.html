@@ -5,14 +5,14 @@
 {% include 'links.html' %}
 </div>
 <div class="abasgrupo">
-    <a href="{% url 'relatorioponto' %}"><p class="abasmenu">Relatório</p></a>
-    <a href="{% url 'cartao_ponto' %}?funcid={{ funcs.first.cod }}"><p class="abasmenu">Cartão Ponto</p></a>
+    <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-y' %}"><p class="abasmenu">Relatório</p></a>
+    <a href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ funcs.first.cod }}"><p class="abasmenu">Cartão Ponto</p></a>
     <p class="abasmenu">Vale Refeição</p>
 </div>
 <div>
     {% for func in funcs %}
         <div class="borda padding-sm margin-sm">
-            <a href="{% url 'cartao_ponto' %}?funcid={{ func.cod }}" {% if func.demitido %}style="color:#ff3333"{% endif %}>
+            <a href="{% url 'cartao_ponto' ua.emp.cod ua.comp|date:'m-y' %}?funcid={{ func.cod }}" {% if func.demitido %}style="color:#ff3333"{% endif %}>
                 {{ func.cod }} - {{ func.nome }}{% if func.demitido %} - Demitido em: {{ func.demissao|date:"d/m/Y" }}{% endif %}
             </a>
             <div class="lancamentos">

@@ -237,7 +237,6 @@ class Holerite(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     tipo = models.CharField(max_length=18, choices=Tipo.choices)
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     enviado = models.BooleanField(default=False)
     funcs = models.ManyToManyField(Pagamento)
 
@@ -261,7 +260,6 @@ class Obras(Base):
 
 class DiaDeTrabalho(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
-    comp = models.ForeignKey(Competencia, on_delete=models.CASCADE, blank=True, null=True)
     inicioem = models.DateField(null=True, blank=True)
     entrou = models.BooleanField(default=False)
     encerrado = models.BooleanField(default=False)
@@ -292,7 +290,6 @@ class Lancamento(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
     valor = models.FloatField(default=0)
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     diatrabalhado = models.ForeignKey(DiaDeTrabalho, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
@@ -304,7 +301,6 @@ class Notas(Base):
     numero = models.IntegerField()
     canc = models.IntegerField()
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     valor = models.FloatField()
     inss = models.FloatField()
     iss = models.FloatField()
@@ -320,7 +316,6 @@ class Alocacao(Base):
     obra = models.ForeignKey(Obras, on_delete=models.DO_NOTHING)
     func = models.ManyToManyField(Funcionario)
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return f'{self.obra} | {self.comp}'
@@ -331,7 +326,6 @@ class UltimoAcesso(models.Model):
     emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING)
     user = models.OneToOneField(Usuario, on_delete=models.DO_NOTHING)
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     atualizado = models.DateField(auto_now=True)
 
     def __str__(self):
@@ -358,7 +352,6 @@ class Imposto(Base):
     nome = models.CharField(max_length=80)
     valor = models.FloatField()
     comp = models.DateField()
-    compet = models.ForeignKey(Competencia, on_delete=models.DO_NOTHING, null=True, blank=True)
     vcto = models.DateField(null=True, blank=True)
     enviado = models.BooleanField(default=False)
     pago = models.BooleanField(default=False)

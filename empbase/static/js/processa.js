@@ -28,7 +28,8 @@ processaarquivo = () => {
     $.post({url, headers: {'X-CSRFToken': csrftoken}, data: form, processData: false, contentType: false,
     success: (res)=>{
         if(res['msg'] == 'sucesso'){
-            location.reload()
+            origin = window.location.origin 
+            window.location.href = origin + res['redirect'];
         }
     }, error: (res)=>{
         console.log(res)
@@ -36,6 +37,8 @@ processaarquivo = () => {
 }
 
 deleta_imposto = (id) => {
+    const urlsplit = window.location.href.split('/')
+    console.log(currentUrl);
     $.post({url: '/tarefas', headers: {'X-CSRFToken': csrftoken}, data: {'deletar': id }, 
     success: (res)=>{
         if(res['msg'] == 'sucesso'){

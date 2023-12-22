@@ -26,7 +26,7 @@
         <div class="accordion-content {{active}}">
             <form method="post">
                 {% csrf_token %}
-                <input type="hidden" id="id" name="id" value="{{alterar.id}}" required>
+                <input type="hidden" id="obraid" name="obraid" value="{{alterar.id}}" required>
                 
                 <label for="cod">Código:</label>
                 <input type="text" id="cod" name="cod" value="{{alterar.cod}}" required>
@@ -48,22 +48,22 @@
 {% endif %}
   
 {% for obra in obras %}
-<div class="accordion borda">
-    <div class="accordion-main flexstart">
-        <a href="{% url 'obras' obra.id %}">
-            <div class="btnbig b_right">
-                <i class="fa-solid fa-trowel-bricks"></i> {{obra.cod}}
-            </div>
-        </a>
-        <p>{{obra.nome}} - {% if obra.cno %}CNO: {{ obra.cno }}{% else %}CNPJ: {{ obra.cnpj }}{% endif %} - {{ obra.atualizado }}</p>
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <a href="{% url 'obras' ua.emp.cod %}?obraid={{obra.id}}">
+                <div class="btnbig b_right">
+                    <i class="fa-solid fa-trowel-bricks"></i> {{obra.cod}}
+                </div>
+            </a>
+            <p>{{obra.nome}} - {% if obra.cno %}CNO: {{ obra.cno }}{% else %}CNPJ: {{ obra.cnpj }}{% endif %} - {{ obra.atualizado }}</p>
+        </div>
+        <div class="accordion-content hidden">
+                <p>CNPJ: {{ obra.cnpj }} | CNO: {{ obra.cno }}</p>
+                <p>{{obra.endereco}} - {{obra.num}} - {{obra.bairro}}</p>
+                <p>{{obra.municipio}} - {{obra.uf}} - {{obra.cep}}</p>
+                <p>Atualizado por: {{obra.usuario}}</p>
+        </div>
     </div>
-    <div class="accordion-content hidden">
-            <p>CNPJ: {{ obra.cnpj }} | CNO: {{ obra.cno }}</p>
-            <p>{{obra.endereco}} - {{obra.num}} - {{obra.bairro}}</p>
-            <p>{{obra.municipio}} - {{obra.uf}} - {{obra.cep}}</p>
-            <p>Atualizado por: {{obra.usuario}}</p>
-    </div>
-</div>
 {% endfor %}
 {% include 'footer.html' %}
 <script src="{% static 'js/processa.js' %}"></script>

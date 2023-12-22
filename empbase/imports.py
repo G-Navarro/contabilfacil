@@ -283,12 +283,13 @@ def criar_obra(arq, usuario):
                 print(obra_existe)
             if len(obra_existe) == 1:
                 obra_existe.update(
-                endereco = df.loc[n + 9, 'E'],
-                num = df.loc[n + 10, 'E'],
-                bairro = df.loc[n + 12, 'E'],
-                municipio = df.loc[n + 13, 'E'],
-                uf = df.loc[n + 14, 'E'],
-                cep = df.loc[n + 15, 'E'])
+                    cod = df.loc[n + 5, 'E'],
+                    endereco = df.loc[n + 9, 'E'],
+                    num = df.loc[n + 10, 'E'],
+                    bairro = df.loc[n + 12, 'E'],
+                    municipio = df.loc[n + 13, 'E'],
+                    uf = df.loc[n + 14, 'E'],
+                    cep = df.loc[n + 15, 'E'])
             elif len(obra_existe) == 0:
                 Obras.objects.create(cod = df.loc[n + 5, 'E'],
                 cnpj = cnpj,
@@ -392,9 +393,8 @@ def baixanotas(arquivo, usuario):
             nota = emp.notas_set.create(emp=emp, numero=numero, canc=canc, comp=comp, valor=valor, inss=inss, iss=iss, tomador=servico)
         print(comp, type(comp))
         aloc = emp.alocacao_set.filter(obra=servico, comp=comp[0:7]+'-01')
-        if not aloc: 
-            compet, competcria = Competencia.objects.get_or_create(emp=emp, nome="alocacoes", comp=comp[0:7]+'-01')            
-            Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp[0:7]+'-01', compet=compet if compet else competcria)
+        if not aloc:          
+            Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp[0:7]+'-01')
 
     return emp, comp
 

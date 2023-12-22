@@ -6,7 +6,7 @@ removedados = () => {
 
 $(document.body).on('click', ()=>{removedados()})
 
-buscadadosobra = (obj, tipo) => {
+buscadadosobra = (obj, emp, tipo) => {
     obj = $(obj)
     prev = obj.prev()
     div = obj.parent()[0]
@@ -14,7 +14,7 @@ buscadadosobra = (obj, tipo) => {
     timer = setTimeout(function(){
         data = {'tipo': tipo, 'val':obj.val()}
         if(obj.val() == ''){} else {
-        $.get({url: '/buscadados', data,
+        $.get({url: '/buscadados/' + emp, data,
         success: (res)=>{
             if(res['msg']){
                 removedados()
@@ -24,8 +24,9 @@ buscadadosobra = (obj, tipo) => {
                 removedados()
             obras = ''
                 for(obra of res){
-                    obras += `<p class='hover' onclick='mudaobra(this, ${obra['id']}, ${obra['nota']})'>${obra['cod']} - ${obra['nome']}</p>`
+                    obras += `<p class='hover' onclick='mudaobra(this, ${emp}, ${obra['id']}, ${$('#notaid').val()})'>${obra['cod']} - ${obra['nome']}</p>`
                 }
+                console.log(res)
                 divinfo = converthtml(`<div id="divinfo">${obras}</div>`)
                 div.append(divinfo)
         }}, error: (res)=>{
@@ -99,9 +100,9 @@ deletaaloc = (obj, funcid, obraid) => {
 }
 
 
-mudaobra = (obj, idobra) => {
-    idnota = $('#id').val()
-    $.get({url:'/alocacao_edit', data:{'tipo': 'alteranota', 'idobra': idobra, 'idnota': idnota},
+mudaobra = (obj, emp, idobra) => {
+    idnota = $('#notaid').val()
+    $.get({url:'/alocacao_edit/' + emp, data:{'tipo': 'alteranota', 'idobra': idobra, 'idnota': idnota},
     success: (res) => {
         console.log(res)
         location.reload()

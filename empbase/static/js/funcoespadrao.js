@@ -1,3 +1,8 @@
+
+origin = window.location.origin
+currentUrl = window.location.href
+editUrl = currentUrl.replace(origin, '')
+
 function converthtml(elementhtml){
     const parser = new DOMParser();
     const html = parser.parseFromString(elementhtml, 'text/html')
@@ -133,7 +138,7 @@ alterastatus = (obj, status, tr, fl) => {
 }
 
 tramite = (obj, emp) => {
-    url = '/tramite_altera'
+    url = '/tramite_altera/' + editUrl.replace('/tarefas/', '')
     data = { 'tramite': $(obj).attr('id'), 'emp': emp }
     $.post({
         url: url,
@@ -182,12 +187,12 @@ postData('impostos', csrftoken, data, obj, '<i class="fa-solid fa-file-circle-ch
 
 enviado = (obj) => {
 const data = { 'imposto': $(obj).attr('id') };
-postData('tarefas', csrftoken, data, obj, '<i class="fa-solid fa-check"></i>', '<i class="fa-regular fa-paper-plane"></i>');
+postData(editUrl, csrftoken, data, obj, '<i class="fa-solid fa-check"></i>', '<i class="fa-regular fa-paper-plane"></i>');
 };
 
 holerite = (obj) => {
 const data = { 'holerite': $(obj).attr('id') };
-postData('tarefas', csrftoken, data, obj, '<i class="fa-solid fa-check"></i>', '<i class="fa-regular fa-paper-plane"></i>');
+postData(editUrl, csrftoken, data, obj, '<i class="fa-solid fa-check"></i>', '<i class="fa-regular fa-paper-plane"></i>');
 };
 
 pagamento = (obj) => {

@@ -7,7 +7,7 @@
         <input  id="pesquisa" type="text" oninput="pesquisa(this, 'resultado_pesquisa')" placeholder="Pesquisar...">
         <div id="resultado_pesquisa">
             {% for funcl in funcs %}
-                <a href="{% url 'funcionarios' funcl.cod%}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
+                <a href="{% url 'funcionarios' funcl.cod %}" {% if funcl.demitido %}style="color:#ff3333"{% endif %}>{{ funcl.cod }} - {{ funcl.nome }}<span style="visibility: hidden;">{{func.cpf}}</span></a>
             {% endfor %}
         </div>
     </div>
@@ -18,7 +18,7 @@
     <div style="margin: 0.5rem;">
         <div class="borda padding-sm infos">
             <p>                
-                <a style="display: inline-block; margin: 0.2rem;" class="btn" href="{% url 'relatorioponto' %}?funcid={{ func.cod }}">
+                <a style="display: inline-block; margin: 0.2rem;" class="btn" href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-y'  %}?funcid={{ func.cod }}">
                         <i class="fa-solid fa-user-clock"></i> {{ func.cod }}
                 </a>
                 <span>NOME:</span> <span {% if func.demitido %}style="color:#ff3333"{% else %}style="color:#f2f2f2"{% endif %}>{{ func.nome }} {% if func.demitido %}- Demitido: {{ func.demissao|date:"d/m/Y" }}{% endif %}</span>

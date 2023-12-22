@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from usuarios.models import Usuario
 from django.contrib.auth.models import Permission
-from empbase.models import Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
+from empbase.models import Competencia, Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
 
 def hash_id(id):
     # Convert the ID to a string
@@ -45,9 +45,12 @@ def get_original_id(hashed_id, objects):
     
     return None  # Return None if no match is found
 
-def getUA(user):
-    ua = UltimoAcesso.objects.filter(user=user).first()
-    acesso = user.temacesso.emp.filter(escr=ua.escr)
+def getUA(user, empid):
+    acesso = user.temacesso.emp.all()
+    emp = acesso.filter(cod=empid).first()
+    ua = emp.competencia_set.filter(finalizada=False).order_by('-comp').first()
+    if not ua:
+        ua = Competencia.objects.create(nome='Pessoal', comp=date.today(), finalizada=False, emp=emp)
     return ua, acesso
 
 
@@ -66,12 +69,12 @@ class Index(TemplateView):
     
     def post(self, request, **kwargs):
         rpost = request.POST
-        user = authenticate(username=rpost['usuario'], password=rpost['senha'])       
+        user = authenticate(username=rpost['usuario'], password=rpost['senha'])
         if user is not None:
             login(request, user)
             if user.eh_funcionario:
                 return HttpResponseRedirect('ponto') 
-            return HttpResponseRedirect('funcionarios')
+            return HttpResponseRedirect('empresas')
         else:
             context = {
             'msg':'Usuario e ou senha incorretos',
@@ -84,7 +87,9 @@ class Empresas(TemplateView):
     template_name = 'empresas.html'
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        user = request.user
+        ua = UltimoAcesso.objects.filter(user=user).first()
+        acesso = user.temacesso.emp.filter(escr=ua.escr)
         context = {
             'ua': ua,
             'emps': acesso.filter(situacao='Ativa'),
@@ -93,7 +98,8 @@ class Empresas(TemplateView):
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        user = request.user
+        ua = UltimoAcesso.objects.filter(user=user).first()
         rpost = request.POST
         if 'comp' in rpost:
             ua.comp = f"{rpost['comp']}-01"
@@ -103,10 +109,9 @@ class Empresas(TemplateView):
             emp = request.user.temacesso.emp.get(id=rpost['idemp'])
             h = date.today()
             h = f'{h.year}-{h.month}-{h.day}'
-            ua, acesso = getUA(request.user)
             ua.emp = emp
             ua.save()
-            return HttpResponseRedirect('funcionarios')
+            return HttpResponseRedirect(f'funcionarios/{ua.emp.cod}')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -116,7 +121,7 @@ class FuncionarioTodos(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         funcs = ua.emp.funcionario_set.all().order_by('-cod')
         if funcs:
             func = None if funcs == 0 else funcs.filter(cod=request.GET['funcid'])[0] if 'funcid' in request.GET else funcs[0]
@@ -154,12 +159,12 @@ class Funcionario(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         funcs = ua.emp.funcionario_set.all().order_by('-cod')
-        func = funcs.get(cod=kwargs['id'])
+        func = funcs.get(cod=kwargs['funcid'])
         context = {
             'ua': ua,
-            'titulo': func,
+            'titulo': f'{func.cod} - {func.nome}',
             'funcs': funcs,
             'func': func,
             'periodo_aq': func.periodoaquisitivo_set.all().order_by('periodoinicio'),
@@ -181,12 +186,12 @@ class Funcionario(TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         ponto = Ponto()
         if 'falta' in rpost:
             rubrica = Rubrica.objects.get_or_create(emp=ua.emp, name='Horas Faltas', cod=40)
-            func = ua.emp.funcionario_set.get(cod=kwargs['id'])
+            func = ua.emp.funcionario_set.get(cod=kwargs['funcid'])
             falta = datetime.strptime(rpost['falta'], '%Y-%m-%d').date()
             diadetrabalho = func.diadetrabalho_set.filter(inicioem=falta)
             #aqui cria mes caso nao exista
@@ -215,7 +220,7 @@ class Funcionario(TemplateView):
                     reducao = datademissao - timedelta(days=7)
             else:
                 reducao = None
-            func = ua.emp.funcionario_set.get(cod=kwargs['id'])
+            func = ua.emp.funcionario_set.get(cod=kwargs['funcid'])
             rescisao = func.rescisao_set.create(
                 emp = func.emp,
                 tiporescisao = tiporescisao,
@@ -250,7 +255,7 @@ class Funcionario(TemplateView):
             func.save()
             return HttpResponseRedirect(f'{func.cod}')
         if 'periodo_aq_inicio' in rpost:
-            func = ua.emp.funcionario_set.get(cod=kwargs['id'])
+            func = ua.emp.funcionario_set.get(cod=kwargs['funcid'])
             periodo = datetime.strptime(rpost['periodo_aq_inicio'], '%Y-%m-%d').date()
             periodo_aq = func.periodoaquisitivo_set.get(periodoinicio=periodo)
             inicioferias = datetime.strptime(rpost['inicioferias'], '%Y-%m-%d').date()
@@ -287,7 +292,8 @@ class Pagamentos(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)            
+        ua, acesso = getUA(request.user, kwargs['empid'])
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
         holerites = ua.emp.holerite_set.filter(comp=ua.comp)
         print(holerites)
         funcs = ua.emp.funcionario_set.filter(demitido=False).filter(admissao__lte=ua.comp)
@@ -335,7 +341,7 @@ class Pagamentos(TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         if 'pagamento' in rpost:
             pg = Pagamento.objects.get(id=rpost['pagamento'])
@@ -346,42 +352,36 @@ class Pagamentos(TemplateView):
             pg.save()
             return JsonResponse({'status': pg.pago})
 
+
 @method_decorator(login_required, name='dispatch')
 class Notas(TemplateView):
     template_name = 'notas.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         notas = ua.emp.notas_set.filter(comp__year=ua.comp.year, comp__month=ua.comp.month).order_by('-numero')
-        if not notas:
-            notas = None
-        else:
+        context = {
+            'ua': ua,
+            'titulo': 'Notas - '+ua.emp.apelido,
+            'notas': notas
+            }
+        if notas:
             notassoma = notas.exclude(canc=1)
             total = notassoma.aggregate(Sum('valor'))['valor__sum']
             inss = notassoma.aggregate(Sum('inss'))['inss__sum']
             iss = notassoma.aggregate(Sum('iss'))['iss__sum']
-            print(notassoma, total, inss, iss)
-            active = ''
-            if 'id' in request.GET:
-                alterar = ua.emp.notas_set.get(id=request.GET['id'])
-                active = 'active'
-            else:
-                alterar = ua.emp.notas_set.last()        
+            context['total'] = total
+            context['inss'] = inss
+            context['iss'] = iss
+            if 'notaid' in request.GET:
+                alterar = ua.emp.notas_set.get(id=request.GET['notaid'])
+                context['active'] = 'active'
+                context['alterar'] = alterar  
         
-        context = {
-            'ua': ua,
-            'titulo': 'Notas - '+ua.emp.apelido,
-            'notas': notas,
-            'total': total,
-            'inss': inss,
-            'iss': iss,
-            'alterar': alterar,
-            'active': active
-            }
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         if rpost['comp']:
             ua.comp = f"{rpost['comp']}-01"
@@ -394,34 +394,29 @@ class Obras(TemplateView):
     template_name = 'obras.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
-        active = ''
-        alterar = ''
-        if kwargs['id'] != 0:
-            alterar = ua.emp.obras_set.get(id=kwargs['id'])
-            active = 'active'
-        obras = ua.emp.obras_set.order_by('-cod')
-            
+        ua, acesso = getUA(request.user, kwargs['empid'])
         context = {
             'ua': ua,
             'titulo': 'Obras - '+ua.emp.apelido,
-            'obras': obras,
-            'alterar': alterar,
-            'active': active
-            }
+        }
+        if 'obraid' in request.GET:
+            context['alterar'] = ua.emp.obras_set.get(id=request.GET['obraid'])
+            context['active'] = 'active'
+        context['obras'] = ua.emp.obras_set.order_by('-cod')
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
-        obra = ua.emp.obras_set.get(id=rpost['id'])
+        print(rpost)
+        obra = ua.emp.obras_set.get(id=rpost['obraid'])
         if rpost['cod'] != 'None':
             obra.cod=rpost['cod']
         obra.nome=rpost['nome'] 
         obra.cnpj=rpost['cnpj']
         obra.cno=rpost['cno']
         obra.save()
-        return HttpResponseRedirect(rpost['id'])
+        return HttpResponseRedirect(str(kwargs['empid']) + '?obraid=' + str(rpost['obraid']))
 
 
 @method_decorator(login_required, name='dispatch')
@@ -429,7 +424,7 @@ class Alocacao(TemplateView):
     template_name = 'alocacoes.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         alocs = ua.emp.alocacao_set.filter(comp__year=ua.comp.year)
         alocs = alocs.filter(comp__month=ua.comp.month).order_by('nota__numero')
 
@@ -449,7 +444,7 @@ class Alocacao(TemplateView):
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         if 'num' in rpost:
             num = subs(rpost['num'])
@@ -481,7 +476,7 @@ class Impostos(TemplateView):
     template_name = 'impostos.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         context = {
             'ua': ua,
             'impostos': ua.emp.imposto_set.order_by('comp'),
@@ -490,7 +485,7 @@ class Impostos(TemplateView):
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-            ua, acesso = getUA(request.user)
+            ua, acesso = getUA(request.user, kwargs['empid'])
             rpost = request.POST
             if 'imposto' in rpost:
                 imp = ua.emp.imposto_set.get(id=rpost['imposto'])
@@ -507,7 +502,9 @@ class Tarefas(TemplateView):
     template_name = 'tarefas.html'
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        escr = request.user.ultimoacesso.escr
+        ua, acesso = getUA(request.user, kwargs['empid'])
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
         rget = request.GET
         emps = acesso.filter(situacao='Ativa')
         form = ImpostoForm()
@@ -530,24 +527,26 @@ class Tarefas(TemplateView):
             'titulo': 'Tarefas',
             }
         if 'impid' in rget:
-            imp = Imposto.objects.filter(id=rget['impid'], emp__escr=ua.escr).first()
+            imp = Imposto.objects.filter(id=rget['impid'], emp__escr=escr).first()
             context['imp_edit'] = imp
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        escr = request.user.ultimoacesso.escr
+        ua, acesso = getUA(request.user, kwargs['empid'])
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
         rpost = request.POST
         if 'deletar' in rpost:
-            imp = Imposto.objects.get(id=rpost['deletar'], emp__escr=ua.escr)
+            imp = Imposto.objects.get(id=rpost['deletar'], emp__escr=escr)
             imp.delete()
             return JsonResponse({'msg': 'sucesso'})
         if 'editid' in rpost:
-            imp = Imposto.objects.get(id=rpost['editid'], emp__escr=ua.escr)
+            imp = Imposto.objects.get(id=rpost['editid'], emp__escr=escr)
             valor = float(rpost['editimpvalor'].replace(',', '.'))
             impvcto = datetime.strptime(rpost['editimpvcto'], '%Y-%m-%d').date() if rpost['editimpvcto'] else None
             imp.nome, imp.valor, imp.vcto = rpost['editimpnome'], valor, impvcto
             imp.save()
-            return HttpResponseRedirect(f'tarefas?empref={imp.emp.cod}')
+            return HttpResponseRedirect(f'{ua.comp.strftime("%m-%y")}?empref={imp.emp.cod}')
         if 'empresa' in rpost:
             impemp = acesso.get(id=rpost['empresa'])
             impvalor = rpost['valorimposto'].replace(',', '.') if rpost['valorimposto'] else 0.0
@@ -576,7 +575,7 @@ class Tarefas(TemplateView):
 class RelatorioPonto(TemplateView):
     template_name = 'relatorio_ponto.html'
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
         context = {
             'ua': ua,
@@ -590,7 +589,7 @@ class RelatorioPonto(TemplateView):
 class CartaoPonto(TemplateView):
     template_name = 'cartao_ponto.html'
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)            
+        ua, acesso = getUA(request.user, kwargs['empid'])            
         funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
         func = None if not funcs else funcs.filter(cod=request.GET['funcid'])[0] if 'funcid' in request.GET else funcs[0]
         if ua.comp >= func.admissao:
@@ -640,7 +639,7 @@ class CartaoPonto(TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         if 'diadetrabalhoinfoinicioem' in rpost and 'funcid' in rpost:
             func = ua.emp.funcionario_set.get(cod=rpost['funcid'])
@@ -760,7 +759,7 @@ class Ponto(TemplateView):
                 diadetrabalho.save()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         func = request.user.funcionario_set.get()
         hoje = date.today()
         #cria mes inteiro de dias de trabalho para o funcionario
@@ -790,7 +789,7 @@ class Ponto(TemplateView):
 
     def post(self, request, **kwargs):
         rpost = request.POST
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         func = ua.emp.funcionario_set.get(cod=request.user.funcionario_set.get().cod)
         #agora = agora.astimezone(timezone_emp)
         hoje = date.today()
@@ -954,7 +953,7 @@ class Usuarios(TemplateView):
     
     def get(self, request, **kwargs):
         user = request.user
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rget = request.GET
         if user.eh_auxiliar:
             return HttpResponseRedirect('funcionarios')
@@ -984,7 +983,7 @@ class Usuarios(TemplateView):
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
         if 'bloqueiauser' in rpost:
             #bloqueia usuario
@@ -1047,7 +1046,7 @@ class AlteraSenha(TemplateView):
     template_name = 'alterasenha.html'
 
     def get(self, request,**kwargs):
-        ua, acesso = getUA(request.user)
+        ua, acesso = getUA(request.user, kwargs['empid'])
         context = {
             'ua': ua,
             'acesso': acesso,
@@ -1073,34 +1072,31 @@ def logout_view(request):
 
 def cadastrar(request):
     rpost = request.POST
-    ua, acesso = getUA(request.user)
     def atu_ultimoacesso(emp, comp=None):
+        ua, acesso = getUA(request.user, kwargs['empid'])
         ua.emp = emp
         if comp:
             ua.comp = comp
         ua.save()
     if rpost['modelo'] == 'empresas':
         emp = criar_empresa(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': '/empresas'})
     if rpost['modelo'] == 'funcionarios':
         emp = criar_funcionario(request.FILES['arquivo'], request.user)
-        atu_ultimoacesso(emp)
-        return JsonResponse({'msg': 'sucesso'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/funcionarios/{emp.cod}'})
     if rpost['modelo'] == 'notas':
         emp, comp = baixanotas(request.FILES['arquivo'], request.user)
-        atu_ultimoacesso(emp, comp)
-        return JsonResponse({'msg': 'sucesso'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/notas/{emp.cod}/{datetime.strptime(comp, "%m-%y")}'})
     if rpost['modelo'] == 'obras':
         emp = criar_obra(request.FILES['arquivo'], request.user)
-        atu_ultimoacesso(emp)
-        return JsonResponse({'msg': 'sucesso'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/obras/{emp.cod}'})
     if rpost['modelo'] == 'impostos':
-        cad_imposto(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso'})
+        emp, comp = cad_imposto(request.FILES['arquivo'], request.user)
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/impostos/{emp.cod}/{datetime.strptime(comp, "%m-%y")}'})
     
 
-def buscadados(request):
-    ua, acesso = getUA(request.user)
+def buscadados(request, **kwargs):
+    ua, acesso = getUA(request.user, kwargs['empid'])
     emp = ua.emp
     tipo = request.GET['tipo']
     val = request.GET['val']
@@ -1132,8 +1128,8 @@ def buscadados(request):
         return JsonResponse(context, safe=False)
 
 
-def alocacao_edit(request):
-    ua, acesso = getUA(request.user)
+def alocacao_edit(request, **kwargs):
+    ua, acesso = getUA(request.user, kwargs['empid'])
     rget = request.GET
     if rget['tipo'] == 'cadastrar':
         obra = ua.emp.alocacao_set.get(obra__id=rget['obraid'], comp__year=ua.comp.year, comp__month=ua.comp.month)
@@ -1160,8 +1156,8 @@ def alocacao_edit(request):
             pass
         return JsonResponse({'res':'sucesso'})
     
-def tramite_altera(request):
-    ua, acesso = getUA(request.user)
+def tramite_altera(request, **kwargs):
+    ua, acesso = getUA(request.user, kwargs['empid'])
     rpost = request.POST
     tramiteid = rpost['tramite']
     emp = acesso.filter(cod=rpost['emp']).first()
