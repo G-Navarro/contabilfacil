@@ -6,32 +6,35 @@ removedados = () => {
 
 $(document.body).on('click', ()=>{removedados()})
 
-buscadadosobra = (obj, emp, tipo) => {
+buscadadosobra = (obj, tipo) => {
     obj = $(obj)
     prev = obj.prev()
     div = obj.parent()[0]
     clearTimeout(timer)
     timer = setTimeout(function(){
         data = {'tipo': tipo, 'val':obj.val()}
-        if(obj.val() == ''){} else {
-        $.get({url: '/buscadados/' + emp, data,
-        success: (res)=>{
-            if(res['msg']){
-                removedados()
-                divinfo = converthtml(`<div id="divinfo">${res['msg']}</div>`)
-                div.append(divinfo)
-            } else {
-                removedados()
-            obras = ''
-                for(obra of res){
-                    obras += `<p class='hover' onclick='mudaobra(this, ${emp}, ${obra['id']}, ${$('#notaid').val()})'>${obra['cod']} - ${obra['nome']}</p>`
-                }
-                console.log(res)
-                divinfo = converthtml(`<div id="divinfo">${obras}</div>`)
-                div.append(divinfo)
-        }}, error: (res)=>{
-            console.log(res)        
-        }})}}, 1000)
+            if(obj.val() == ''){} else {
+                whref = window.location.href
+                pattern = /\b\d{3}\/\d{2}-\d{4}\b/g;
+                $.get({url: '/buscadados/' + whref.match(pattern), data,
+                success: (res)=>{
+                    if(res['msg']){
+                        removedados()
+                        divinfo = converthtml(`<div id="divinfo">${res['msg']}</div>`)
+                        div.append(divinfo)
+                    } else {
+                        removedados()
+                    obras = ''
+                        for(obra of res){
+                            obras += `<p class='hover' onclick='mudaobra(this, ${obra['id']}, ${$('#notaid').val()})'>${obra['cod']} - ${obra['nome']}</p>`
+                        }
+                        console.log(res)
+                        divinfo = converthtml(`<div id="divinfo">${obras}</div>`)
+                        div.append(divinfo)
+                }}, error: (res)=>{
+                    console.log(res)        
+                }})
+        }}, 1000)
 }
 
 buscadados = (obj, tipo) => {
@@ -42,23 +45,26 @@ buscadados = (obj, tipo) => {
     timer = setTimeout(function(){
         data = {'tipo': tipo, 'val':obj.val()}
         if(obj.val() == ''){} else {
-        $.get({url: '/buscadados', data,
-        success: (res)=>{
-            if(res['msg']){
-                removedados()
-                divinfo = converthtml(`<div id="divinfo">${res['msg']}</div>`)
-                div.append(divinfo)
-            } else {
-                removedados()
-            funcs = ''
-                for(func of res){
-                    funcs += `<p class='hover' onclick='addaloc(this, ${func['id']}, ${obj.attr("id")})'>${func['nome']}</p>`
-                }
-                divinfo = converthtml(`<div id="divinfo">${funcs}</div>`)
-                div.append(divinfo)
-        }}, error: (res)=>{
-            console.log(res)        
-        }})}}, 1000)
+            whref = window.location.href
+            pattern = /\b\d{3}\/\d{2}-\d{4}\b/g;
+            $.get({url: '/buscadados/' + whref.match(pattern), data,
+            success: (res)=>{
+                if(res['msg']){
+                    removedados()
+                    divinfo = converthtml(`<div id="divinfo">${res['msg']}</div>`)
+                    div.append(divinfo)
+                } else {
+                    removedados()
+                funcs = ''
+                    for(func of res){
+                        funcs += `<p class='hover' onclick='addaloc(this, ${func['id']}, ${obj.attr("id")})'>${func['nome']}</p>`
+                    }
+                    divinfo = converthtml(`<div id="divinfo">${funcs}</div>`)
+                    div.append(divinfo)
+            }}, error: (res)=>{
+                console.log(res)        
+            }})
+    }}, 1000)
 }
 
 addaloc = (obj, funcid, obraid) => {
@@ -66,8 +72,10 @@ addaloc = (obj, funcid, obraid) => {
     prev = obj.parent().parent()
     input = $($('#divinfo').prev().prev())
     input.val('')
-    removedados()
-    $.get({url:'/alocacao_edit', data:{'tipo': 'cadastrar', 'funcid': funcid, 'obraid': obraid},
+    removedados()    
+    whref = window.location.href
+    pattern = /\b\d{3}\/\d{2}-\d{4}\b/g;
+    $.get({url:'/alocacao_edit/' + whref.match(pattern), data:{'tipo': 'cadastrar', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
         if(res['msg']){
             showmsg(res['msg'])
@@ -91,7 +99,9 @@ addaloc = (obj, funcid, obraid) => {
 deletaaloc = (obj, funcid, obraid) => {
     obj = $(obj)
     prev = obj.prev()
-    $.get({url:'/alocacao_edit', data:{'tipo': 'excluir', 'funcid': funcid, 'obraid': obraid},
+    whref = window.location.href
+    pattern = /\b\d{3}\/\d{2}-\d{4}\b/g;
+    $.get({url:'/alocacao_edit/' + whref.match(pattern), data:{'tipo': 'excluir', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
         obj.parent()[0].remove()
     }, error: (res) => {
@@ -100,9 +110,11 @@ deletaaloc = (obj, funcid, obraid) => {
 }
 
 
-mudaobra = (obj, emp, idobra) => {
-    idnota = $('#notaid').val()
-    $.get({url:'/alocacao_edit/' + emp, data:{'tipo': 'alteranota', 'idobra': idobra, 'idnota': idnota},
+mudaobra = (obj, idobra) => {
+    idnota = $('#notaid').val()    
+    whref = window.location.href
+    pattern = /\b\d{3}\/\d{2}-\d{4}\b/g;
+    $.get({url:'/alocacao_edit/' + whref.match(pattern), data:{'tipo': 'alteranota', 'idobra': idobra, 'idnota': idnota},
     success: (res) => {
         console.log(res)
         location.reload()

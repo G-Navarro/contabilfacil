@@ -67,7 +67,7 @@
                 {% for userinfo in is_superuser %}
                     <div class="borda" style="margin: 0.5rem; padding: 0.5rem;">
                         <div class="flexstart">
-                            <a href="{% url 'usuarios' %}?userid={{ userinfo.id|hash_id }}">
+                            <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}?userid={{ userinfo.id|hash_id }}">
                                 <div class="btnbig flexcenter" style="border-radius: 4px; width: 3rem;">
                                     <i class="fa-solid fa-user-pen"></i>
                                 </div>
@@ -109,7 +109,7 @@
                 {% for userinfo in eh_supervisor %}
                     <div class="borda" style="margin: 0.5rem; padding: 0.5rem;">
                         <div class="flexstart">
-                            <a href="{% url 'usuarios' %}?userid={{ userinfo.id|hash_id }}">
+                            <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}?userid={{ userinfo.id|hash_id }}">
                                 <div class="btnbig flexcenter" style="border-radius: 4px; width: 3rem;">
                                     <i class="fa-solid fa-user-pen"></i>
                                 </div>
@@ -149,7 +149,7 @@
                 {% for userinfo in eh_gerente %}
                     <div class="borda" style="margin: 0.5rem; padding: 0.5rem;">
                         <div class="flexstart">
-                            <a href="{% url 'usuarios' %}?userid={{ userinfo.id|hash_id }}">
+                            <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}?userid={{ userinfo.id|hash_id }}">
                                 <div class="btnbig flexcenter" style="border-radius: 4px; width: 3rem;">
                                     <i class="fa-solid fa-user-pen"></i>
                                 </div>
@@ -189,7 +189,7 @@
                     {% for userinfo in eh_auxiliar %}
                         <div class="borda" style="margin: 0.5rem; padding: 0.5rem;">
                             <div class="flexstart">
-                                <a href="{% url 'usuarios' %}?userid={{ userinfo.id|hash_id }}">
+                                <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}?userid={{ userinfo.id|hash_id }}">
                                     <div class="btnbig flexcenter" style="border-radius: 4px; width: 3rem;">
                                         <i class="fa-solid fa-user-pen"></i>
                                     </div>
@@ -233,7 +233,7 @@
                             <div class="borda usuario_func" style="margin: 0.5rem; padding: 0.5rem;">
                                 <div>
                                     {% if user.is_superuser %}
-                                        <a  style="margin-right: 0.5rem;" class="btn" href="{% url 'usuarios' %}?userid={{ userinfo.id|hash_id }}">
+                                        <a  style="margin-right: 0.5rem;" class="btn" href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}?userid={{ userinfo.id|hash_id }}">
                                             <i class="fa-solid fa-user-pen"></i>
                                         </a>
                                     {% else %}                                    

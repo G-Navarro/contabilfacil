@@ -461,3 +461,5 @@ def cad_imposto(arq, user):
                             break
     return 'sucesso'
 
+def cad_pagamento(arq, user):
+    pass

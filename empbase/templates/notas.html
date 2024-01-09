@@ -22,7 +22,7 @@
     <p class="borda msg">Nenhuma nota cadastrada</p>
 {% else %}
 <div class="abasgrupo">
-    <a class="abasmenu" href="{% url 'alocacoes'  ua.emp.cod ua.comp|date:'m-y' %}">Alocações</a>
+    <a class="abasmenu" href="{% url 'alocacoes'  ua.emp.cod ua.comp|date:'m-Y' %}">Alocações</a>
 </div>
 <br>
 <p style="margin-left: 1rem;">Total: R$ {{ total|floatformat:2 }} | INSS: R$ {{ inss|floatformat:2 }} | ISS: R$ {{ iss }}</p>
@@ -46,10 +46,10 @@
 {% for nota in notas %}
     <div class="accordion borda">
         <div class="accordion-main flexstart">
-                <a href="{% url 'notas'  ua.emp.cod ua.comp|date:'m-y' %}?notaid={{ nota.id }}">
+                <a href="{% url 'notas'  ua.emp.cod ua.comp|date:'m-Y' %}?notaid={{ nota.id }}">
                     <div class="btnbig b_right"><i class="fa-solid fa-file-invoice"></i> <span {% if nota.canc == 1 %} style="color: #ff3333;" {% endif %}>Nota: {{ nota.numero }}</span></div>
                 </a>
-                <a href="{% url 'obras' ua.emp.cod %}?obraid={{ nota.tomador.id }}">
+                <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-Y' %}?obraid={{ nota.tomador.id }}">
                     <div class="btnbig b_right" {% if nota.tomador.cod == None %}style="color: #ffe666;"{% elif nota.canc == 1 %} style="color: #ff3333;" {% endif %}><i class="fa-solid fa-trowel-bricks"></i> Obra: {{ nota.tomador.cod }}</div>
                 </a>
             <p  {% if nota.canc == 1 %} style="color: #ff3333;" {% endif %}>{{ nota.tomador.nome }}

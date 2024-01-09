@@ -23,12 +23,12 @@ processaarquivo = () => {
     form = new FormData();
     form.append('arquivo', inputfile)
     form.append('modelo', $('#modelo').val())
-
+    origin = window.location.origin
+    
     url='/cadastrar'
     $.post({url, headers: {'X-CSRFToken': csrftoken}, data: form, processData: false, contentType: false,
     success: (res)=>{
         if(res['msg'] == 'sucesso'){
-            origin = window.location.origin 
             window.location.href = origin + res['redirect'];
         }
     }, error: (res)=>{

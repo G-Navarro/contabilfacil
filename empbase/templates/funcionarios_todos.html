@@ -7,12 +7,12 @@
         <p>Filtros</p>
     </div>
     <div class="accordion-content hidden">
-        <div style="margin: 0.5rem; display: flex;align-items: stretch;justify-content: space-between;">
-            <input type="text" name="pesquisa_cod" id="pesquisa_cod" placeholder="Código" oninput="pesquisa_alvo(this)">
-            <input type="text" name="pesquisa_nome" id="pesquisa_nome" placeholder="Nome" oninput="pesquisa_alvo(this)">
-            <input type="date" name="pesquisa_admissao" id="pesquisa_admissao" placeholder="Admissao" oninput="pesquisa_alvo(this)">
-            <input type="text" name="pesquisa_cargo" id="pesquisa_cargo" placeholder="Cargo" oninput="pesquisa_alvo(this)">
-            <input type="text" name="pesquisa_salario" id="pesquisa_salario" placeholder="Salário" oninput="pesquisa_alvo(this)">
+        <div id="filtros" class="filtros" style="margin: 0.5rem; display: flex;align-items: stretch;justify-content: space-between;">
+            <input type="text" name="pesquisa_cod" id="pesquisa_cod" class="cod" placeholder="Código" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_nome" id="pesquisa_nome" class="funcnome" placeholder="Nome" oninput="pesquisa_alvo(this)">
+            <input type="date" name="pesquisa_admissao" id="pesquisa_admissao" class="admissao" placeholder="Admissao" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_cargo" id="pesquisa_cargo" class="cargo" placeholder="Cargo" oninput="pesquisa_alvo(this)">
+            <input type="text" name="pesquisa_salario" id="pesquisa_salario" class="salario" placeholder="Salário" oninput="pesquisa_alvo(this)">
         </div>
     </div>
 </div>
@@ -48,7 +48,7 @@
         {% for func in funcs %}
                 <div class="borda flexbetween padding-sm sombra pesquisa_alvo" style="margin: 0.5rem;">
                     <div>
-                        <a href="{% url 'funcionarios' func.emp.cod func.cod %}">
+                        <a href="{% url 'funcionarios' func.emp.cod ua.comp|date:'m-Y' func.cod %}">
                             <div style="color: #f2f2f2; text-align: center;">
                                 <i class="fa-solid fa-address-card"></i> <span class="cod">{{ func.cod }}</span>
                             </div>
@@ -56,7 +56,7 @@
                     </div>  
                     <div>
                         <span>
-                            <a href="{% url 'funcionarios' func.emp.cod func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}  class="nome">
+                            <a href="{% url 'funcionarios' func.emp.cod ua.comp|date:'m-Y' func.cod %}" {% if func.demitido %}style="color:#ff3333" {% endif %}  class="nome funcnome">
                                 {{ func.nome }} {% if func.demitido %} - {{ func.demissao|date:"d/m/Y" }}{% endif %}
                             </a>
                         </span>

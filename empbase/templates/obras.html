@@ -50,7 +50,7 @@
 {% for obra in obras %}
     <div class="accordion borda">
         <div class="accordion-main flexstart">
-            <a href="{% url 'obras' ua.emp.cod %}?obraid={{obra.id}}">
+            <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-y' %}?obraid={{obra.id}}">
                 <div class="btnbig b_right">
                     <i class="fa-solid fa-trowel-bricks"></i> {{obra.cod}}
                 </div>

@@ -231,7 +231,7 @@ class Holerite(Base):
     class Tipo(models.TextChoices):
         AD = 'ADIANTAMENTO'
         FM = 'FOLHA MENSAL'
-        AD13 = 'ADIANTAMENTO 13º'
+        AD13 = 'ADIANTAMENTO 13º' 
         FM13 = 'PAGAMENTO 13º'
 
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
