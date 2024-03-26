@@ -24,7 +24,7 @@
         <div style="display: flex; justify-content: space-around; margin-bottom: 0.5rem;">
             <!--<a class="botao_seta" href="{% url 'ponto' %}?funcid={{ idfuncanterior }}"><i class="fa-solid fa-arrow-left"></i></a>-->
             <div>
-                <p style="text-align: center; font-size: 2rem;"><a href="{% url 'funcionarios' ua.emp.cod func.cod %}" class="nome">{{ func.cod }} - {{ func.nome }}</a></p>
+                <p style="text-align: center; font-size: 2rem;"><a href="{% url 'funcionarios' ua.emp.cod ua.comp|date:'m-y' func.cod %}" class="nome">{{ func.cod }} - {{ func.nome }}</a></p>
                 {% if ua.comp.month == func.admissao.month and ua.comp.year == func.admissao.year %}
                     <p class="borda padding-sm" style="margin:0.5rem auto; width: 70%; text-align: center">Admissão: {{ func.admissao|date:"d/m/Y" }}</p>
                 {% endif %}

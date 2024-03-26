@@ -14,7 +14,7 @@ function pesquisa_alvo(obj) {
     $('.pesquisa_alvo').each(function() {
         element_alvo = this
         text = true
-        checkbox = true
+        checkbox = true 
         date = true
         for(input of inputs) {
             class_name = input.className

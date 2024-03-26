@@ -7,21 +7,21 @@
         <a target="_blank" onclick="alakazam('#competencia')"><i class="fa-regular fa-calendar"></i> {{ua.comp|date:"m/y"}}</a>
         {% if not user.eh_funcionario %}
             <a href="{% url 'empresas' %}">Empresas</a>
-            <a href="{% url 'funcionarios'  ua.emp.cod ua.comp|date:'m-Y' %}">Funcionários</a>
-            <a href="{% url 'pagamentos' ua.emp.cod ua.comp|date:'m-Y' %}">Pagamentos</a>
-            <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-Y' %}">Relatorio Ponto</a>
-            <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-Y' %}">Notas</a>
-            <a href="{% url 'obras'  ua.emp.cod ua.comp|date:'m-Y' %}">Obras</a>
-            <a href="{% url 'impostos' ua.emp.cod ua.comp|date:'m-Y' %}">Impostos</a>
+            <a href="{% url 'funcionarios' ua.emp.cod ua.comp|date:'m-y' %}">Funcionários</a>
+            <a href="{% url 'pagamentos' ua.emp.cod ua.comp|date:'m-y' %}">Pagamentos</a>
+            <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-y' %}">Relatorio Ponto</a>
+            <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-y' %}">Notas</a>
+            <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-y' %}">Obras</a>
+            <a href="{% url 'impostos' ua.emp.cod ua.comp|date:'m-y' %}">Impostos</a>
             {% if user.is_superuser %}
-                <a href="{% url 'tarefas' ua.emp.cod ua.comp|date:'m-Y' %}">Tarefas</a>
+                <a href="{% url 'tarefas' ua.emp.cod ua.comp|date:'m-y' %}">Tarefas</a>
             {% endif %}
         {% else %}
             <a href="{% url 'ponto' ua.comp|date:'m-y' %}">Ponto</a>
             <a href="{% url 'alterasenha' %}">Alterar Senha</a>
         {% endif %}
         {% if not user.eh_auxiliar and not user.eh_funcionario %}
-            <a href="{% url 'usuarios'  ua.emp.cod ua.comp|date:'m-Y' %}">Usuários</a>
+            <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}">Usuários</a>
         {% endif %}
         <div id="logout">
             <a href="{% url 'logout' %}">{{ user.nome }} | Logout</a>
@@ -52,21 +52,21 @@
         <i class="fa-solid fa-xmark" style="float: right; font-size: 1.5rem;"></i>
     </a>
     <a href="{% url 'empresas' %}">Empresas</a>
-    <a href="{% url 'funcionarios'  ua.emp.cod ua.comp|date:'m-Y' %}">Funcionários</a>
-    <a href="{% url 'pagamentos' ua.emp.cod ua.comp|date:'m-Y' %}">Pagamentos</a>
-    <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-Y' %}">Relatorio Ponto</a>
-    <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-Y' %}">Notas</a>
-    <a href="{% url 'obras'  ua.emp.cod ua.comp|date:'m-Y' %}">Obras</a>
-    <a href="{% url 'impostos' ua.emp.cod ua.comp|date:'m-Y' %}">Impostos</a>
+    <a href="{% url 'funcionarios' ua.emp.cod ua.comp|date:'m-y' %}">Funcionários</a>
+    <a href="{% url 'pagamentos' ua.emp.cod ua.comp|date:'m-y' %}">Pagamentos</a>
+    <a href="{% url 'relatorioponto' ua.emp.cod ua.comp|date:'m-y' %}">Relatorio Ponto</a>
+    <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-y' %}">Notas</a>
+    <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-y' %}">Obras</a>
+    <a href="{% url 'impostos' ua.emp.cod ua.comp|date:'m-y' %}">Impostos</a>
     {% if user.is_superuser %}
-        <a href="{% url 'tarefas' ua.emp.cod ua.comp|date:'m-Y' %}">Tarefas</a>
+        <a href="{% url 'tarefas' ua.emp.cod ua.comp|date:'m-y' %}">Tarefas</a>
     {% endif %}
     {% else %}
-        <a href="{% url 'ponto' ua.comp|date:'m-y' %}">Ponto</a>
+        <a href="{% url 'ponto' %}">Ponto</a>
         <a href="{% url 'alterasenha' %}">Alterar Senha</a>
     {% endif %}
     {% if not user.eh_auxiliar and not user.eh_funcionario %}
-        <a href="{% url 'usuarios'  ua.emp.cod ua.comp|date:'m-Y' %}">Usuários</a>
+        <a href="{% url 'usuarios' ua.emp.cod ua.comp|date:'m-y' %}">Usuários</a>
     {% endif %} 
     <div>
         <a href="{% url 'logout' %}">{{ user.nome }} | Logout</a>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from envioemails.views import Envioemails
+from envioemails.views import envioguias, login_api
 from empbase.views import AlteraSenha, CartaoPonto, FuncionarioTodos, Index, Funcionario, Empresas, Notas, Obras, Alocacao, Impostos, Pagamentos, Ponto, RelatorioPonto, Tarefas, Usuarios, cadastrar, buscadados, alocacao_edit, logout_view, tramite_altera
 
 urlpatterns = [
@@ -20,10 +20,11 @@ urlpatterns = [
     path('alocacoes/<int:empid>/<str:comp>', Alocacao.as_view(), name='alocacoes'),
     path('usuarios/<int:empid>/<str:comp>', Usuarios.as_view(), name='usuarios'),
     path('alterasenha', AlteraSenha.as_view(), name='alterasenha'),
-    path('envioemails', Envioemails.as_view(), name='envioemails'),
-    path('alocacao_edit/<int:empid>/<str:comp>', alocacao_edit, name='alocacao_edit'),
+    path('envioguias', envioguias, name='envioguias'),
+    path('login_api', login_api, name='login_api'),
+    path('alocacao_edit/<int:empid>', alocacao_edit, name='alocacao_edit'),
     path('cadastrar', cadastrar, name='cadastrar'),
-    path('buscadados/<int:empid>/<str:comp>', buscadados, name='buscadados'),
-    path('tramite_altera/<int:empid>/<str:comp>', tramite_altera, name='tramite_altera'),
+    path('buscadados/<int:empid>', buscadados, name='buscadados'),
+    path('tramite_altera', tramite_altera, name='tramite_altera'),
     path('logout', logout_view, name='logout')
 ]

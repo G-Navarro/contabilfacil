@@ -4,7 +4,7 @@ import numpy as np
 from django.db.models import F
 from xml.dom.minidom import parse
 from openpyxl.utils import get_column_letter
-from empbase.models import Alocacao, Competencia, Funcionario, Empresa, Imposto, Notas, Obras, Contribuintes, PeriodoAquisitivo, TemAcesso, Tramites, Turno, UltimoAcesso, ValeTransporte
+from empbase.models import Alocacao, Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Contribuintes, PeriodoAquisitivo, TemAcesso, Tramites, Turno, UltimoAcesso, ValeTransporte
 from usuarios.models import Usuario
 
 def lerexcel(nome):
@@ -179,7 +179,7 @@ def criar_funcionario(arq, usuario):
             cpfint = int(df.loc[n + 27, 'BP'])
             end = df.loc[n + 15, 'C'].split(',')
             localnasc = df.loc[n + 18, 'AN'].split(' - ') if not isinstance(df.loc[n + 18, 'AN'], float) else ['N defindo', 'N defindo']
-            cnpj = str(df.loc[n + 7, 'CN']).replace('.0','')
+            cnpj = str(df.loc[n + 7, 'CO']).replace('.0','')
             if len(cnpj) == 13:
                 cnpj = '0' + cnpj
             contratante = usuario.temacesso.emp.get(cnpj=cnpj)
@@ -205,7 +205,8 @@ def criar_funcionario(arq, usuario):
                 datanasc = df.loc[n + 18, 'R'].strftime("%Y-%m-%d")
             func = Funcionario(
             emp = contratante,
-            cod = df.loc[n + 4, 'AE'],
+            cod = df.loc[n + 4, 'CY'],
+            matesocial = df.loc[n + 4, 'AE'],
             nome = df.loc[n + 13, 'C'],
             cpf = str(cpfint) if len(str(cpfint)) == 11 else '0' + str(cpfint),
             pis = df.loc[n + 43, 'O'],
@@ -235,8 +236,10 @@ def criar_funcionario(arq, usuario):
             mae = df.loc[n + 23, 'AC'],
             demissao = demissao, demitido = False if demissao == None else True,)
             func.usuario = usuario
-            funccad = contratante.funcionario_set.filter(cod=func.cod).first()
+            funccad = contratante.funcionario_set.filter(cpf=func.cpf, admissao=func.admissao).first()
             if funccad:
+                funccad.cod = func.cod
+                funccad.matesocial = func.matesocial
                 funccad.demissao = func.demissao
                 funccad.demitido = func.demitido
                 funccad.salario = func.salario
@@ -329,10 +332,11 @@ def baixanotas(arquivo, usuario):
         emp = usuario.temacesso.emp.get(cnpj=emp)
         canc = 0
         numero = nf.getElementsByTagName('Numero')[0].firstChild.nodeValue
-        comp = nf.getElementsByTagName('Competencia')[0].firstChild.nodeValue[:-9]
+        comp = datetime.strptime(nf.getElementsByTagName('Competencia')[0].firstChild.nodeValue.split('T')[0], "%Y-%m-%d")
         valor = nf.getElementsByTagName('ValorServicos')[0].firstChild.nodeValue
         inss = nf.getElementsByTagName('ValorInss')[0].firstChild.nodeValue
         iss = nf.getElementsByTagName('ValorIss')[0].firstChild.nodeValue
+
         if numero in canceladalist:
             canc = 1
         try:
@@ -383,7 +387,6 @@ def baixanotas(arquivo, usuario):
             servico = emp.obras_set.create(emp=emp, cod=None, cnpj=subs(cnpjtom), cno=cnonum, nome=nometom,
                 endereco=ruatom, num=numtom, bairro=bairrotom, uf=uftom, cep=ceptom)
         
-        print(servico)
         try: 
             nota = emp.notas_set.get(numero=numero)
             if nota.canc == 0 and canc == 1:
@@ -391,10 +394,10 @@ def baixanotas(arquivo, usuario):
                 nota.save()  
         except:
             nota = emp.notas_set.create(emp=emp, numero=numero, canc=canc, comp=comp, valor=valor, inss=inss, iss=iss, tomador=servico)
-        print(comp, type(comp))
-        aloc = emp.alocacao_set.filter(obra=servico, comp=comp[0:7]+'-01')
+        
+        aloc = emp.alocacao_set.filter(obra=servico, comp=comp)
         if not aloc:          
-            Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp[0:7]+'-01')
+            Alocacao.objects.create(emp=emp, nota=nota, obra=servico, comp=comp)
 
     return emp, comp
 
@@ -461,5 +464,48 @@ def cad_imposto(arq, user):
                             break
     return 'sucesso'
 
-def cad_pagamento(arq, user):
-    pass
+
+def cad_pagamento(arq, user):    
+    df = lerexcel(arq)
+    col = pd.read_excel(arq, usecols='a')
+    tamanho_col = len(col) - 2
+    for i in range(tamanho_col):
+        base = col.iloc[i][0]
+        base = base if isinstance(base, str) else ''
+        if 'CNPJ:' in base:
+            i=i+1
+            cnpj = subs(df.loc[i, 'J'])
+            emp = user.temacesso.emp.get(cnpj=cnpj)
+            tipo = df.loc[i + 1, 'J']
+            if tipo == 'Adiantamento':
+                tipo = Holerite.Tipo.AD
+            elif tipo == 'Folha Mensal':
+                tipo = Holerite.Tipo.FM
+            elif tipo == '13o. Adiantamento':
+                tipo = Holerite.Tipo.AD13
+            elif tipo == '13o. Integral':
+                tipo = Holerite.Tipo.FM13
+            comp = df.loc[i, 'AM']
+            comp = datetime.strptime('01' + comp[2:10], "%d/%m/%Y")
+            holerite = emp.holerite_set.filter(tipo=tipo, comp=comp).first()
+            if not holerite:
+                holerite = emp.holerite_set.create(tipo=tipo, comp=comp)
+            for x in range(tamanho_col - i):
+                x = x + i + 2
+                cod = '' if isinstance(df.loc[x, 'A'], float) else df.loc[x, 'A']
+                if 'CNPJ:' in cod:
+                    break
+                else:
+                    try:                      
+                        func = emp.funcionario_set.get(cod=int(cod))
+                        val_paga = float(df.loc[x, 'AG'].replace('.', '').replace(',', '.'))
+                        pagamento = holerite.funcs.filter(func=func).first()
+                        if not pagamento:
+                            pagamento = func.pagamento_set.create(valor=val_paga)
+                            holerite.funcs.add(pagamento)
+                        else:
+                            pagamento.valor = val_paga
+                            pagamento.save()
+                    except ValueError as e:
+                        pass
+    return emp, comp

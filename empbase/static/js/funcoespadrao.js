@@ -101,6 +101,8 @@ $('.abasmenu').click(
         p = $(e.target).index()
         abasmenu = $('.abasmenu')
         abas = $('.abas')
+        console.log(abasmenu)
+        console.log(abas)
         for(i = 0; i < abasmenu.length; i++){
             $(abasmenu[i]).removeClass('abaativa')
             $(abas[i]).addClass('hidden')
@@ -136,7 +138,10 @@ alterastatus = (obj, status, tr, fl) => {
 }
 
 tramite = (obj, emp) => {
-    url = '/tramite_altera/' + editUrl.replace('/tarefas/', '')
+    originUrl = window.location.origin
+    currentUrl = window.location.href.replace(originUrl, '')
+    urlparams = currentUrl.split('/')
+    url = '/tramite_altera'
     data = { 'tramite': $(obj).attr('id'), 'emp': emp }
     $.post({
         url: url,
@@ -247,20 +252,9 @@ mostrar = (obj) => {
 alteracomp = () => {
     comp_month = $('#comp_month').val()
     comp_year = $('#comp_year').val()
-    pattern = /\b\d{2}-\d{4}\b/g;
-    url = window.location.href
-    url = url.replace(pattern, `${comp_month}-${comp_year}`)
-    window.location.href = url
-    
-    /*$.post({url:'/empresas', headers:{'X-CSRFToken': csrftoken}, data:{'comp':`${comp_year}-${comp_month}`}, 
-    success: (res) => {
-        if(res['msg'] == 'sucesso'){
-            location.reload()
-        }
-    }, error: (res) => {
-        console.log(res)
-    }})*/
-
+    currentUrl = window.location.href
+    pattern = /\b\d{2}-\d{2}\b/g
+    window.location.href = currentUrl.replace(pattern, comp_month + '-' + comp_year.substring(2))
 }
 
 adcionaacesso = (obj, id) => {
@@ -370,3 +364,19 @@ alakazam = (id) => {
         removefundo()
     })
 }
+
+/*function pesquisa_alvo(obj) {
+    var alvo = $(obj)
+    var class_alvo = alvo.attr('id').split('_')[1];
+    var inputValue = $(alvo).val().toLowerCase()
+    $('.pesquisa_alvo').each(function() {
+        campo_alvo = $(this).find(`.${class_alvo}`)[0].outerText;
+        campo_alvo = campo_alvo.toLowerCase()
+        console.log(inputValue, campo_alvo)
+        if (campo_alvo.includes(inputValue)) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+}*/

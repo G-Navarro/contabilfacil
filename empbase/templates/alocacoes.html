@@ -30,13 +30,13 @@
                         </div>
                     </a>
                     {% else %}
-                        <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-Y' %}?alocacaoid={{ alocacao.nota.id }}">
+                        <a href="{% url 'notas' ua.emp.cod ua.comp|date:'m-y' %}?id={{ alocacao.nota.id }}">
                             <div class="btnbig b_right">
                                 <i class="fa-solid fa-file-invoice"></i> Nota: {{ alocacao.nota.numero }}
                             </div>
                         </a>
                     {% endif %}
-                        <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-Y' %}?obraid={{ alocacao.obra.id }}">
+                        <a href="{% url 'obras' ua.emp.cod ua.comp|date:'m-y' %}?id={{ alocacao.obra.id }}">
                             <div class="btnbig b_right"  {% if alocacao.obra.cod == None %}style="color: #ffe666;"{% endif %}>
                                 <i class="fa-solid fa-trowel-bricks"></i> Obra: {{ alocacao.obra.cod }}
                             </div>

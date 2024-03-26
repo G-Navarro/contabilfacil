@@ -154,7 +154,7 @@
     {% for demissao in rescisoes %}
         <div class="padding-sm borda sombra margin-sm">
             <p class="margin-sm">{{ demissao.func.emp }}</p>
-            <p  style="margin: 1rem 0;"><a href="{% url 'funcionarios' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
+            <p  style="margin: 1rem 0;"><a href="{% url 'funcionarios' demissao.func.emp.cod ua.comp|date:'m-y' demissao.func.cod %}" class="btn">{{ demissao.func.cod }}</a> {{ demissao.func.nome }}</p>
             <p><span class="titulo">Tipo rescisao:</span>    
                 {{ demissao.tiporescisao }}
             </p>
@@ -186,7 +186,7 @@
     {% for periodo_aq in ferias %}
         <div class="borda padding-sm margin-sm">
             <p class="margin-sm"></p> {{ periodo_aq.func.emp }}</p>
-            <p style="margin: 1rem 0;"><a href="{% url 'funcionarios' periodo_aq.func.cod %}" class="btn">{{ periodo_aq.func.cod }}</a> {{ periodo_aq.func.nome }}</p>
+            <p style="margin: 1rem 0;"><a href="{% url 'funcionarios' periodo_aq.func.cod ua.comp|date:'m-y' %}" class="btn">{{ periodo_aq.func.cod }}</a> {{ periodo_aq.func.nome }}</p>
             <div class="borda padding-sm" style="text-align: center;">
                 <p><span class="titulo">Período Aquisitivo</span></p>
                 <p> {{ periodo_aq.periodoinicio|date:"d/m/Y" }} - {{ periodo_aq.periodofim|date:"d/m/Y" }}</p>

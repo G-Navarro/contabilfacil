@@ -15,6 +15,10 @@ divdropArea.on("dragleave", function(event) {
 });
 
 processaarquivo = () => {
+    currentUrl = window.location.href
+    pattern = /\b\d{2}-\d{2}\b/g
+    comp = currentUrl.match(pattern)
+    url='/cadastrar?comp=' + comp
     loading = converthtml("<div id=blackout><span class='loader'></span></div>")
     $('body').append(loading) 
     divdropArea.append(loading)
@@ -23,12 +27,11 @@ processaarquivo = () => {
     form = new FormData();
     form.append('arquivo', inputfile)
     form.append('modelo', $('#modelo').val())
-    origin = window.location.origin
-    
-    url='/cadastrar'
+    form.append('comp', comp)
     $.post({url, headers: {'X-CSRFToken': csrftoken}, data: form, processData: false, contentType: false,
     success: (res)=>{
         if(res['msg'] == 'sucesso'){
+            origin = window.location.origin 
             window.location.href = origin + res['redirect'];
         }
     }, error: (res)=>{

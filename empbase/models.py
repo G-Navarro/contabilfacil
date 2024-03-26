@@ -10,6 +10,9 @@ class Base(models.Model):
     ativa = models.BooleanField(default=True, null=True, blank=True)
     usuario = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.criado} - {self.atualizado} - {self.ativa}'
+
 
 class Tramites(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
@@ -131,6 +134,7 @@ class ValeTransporte(Base):
 class Funcionario(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     cod = models.IntegerField()
+    matesocial = models.IntegerField(blank=True, null=True)
     nome = models.CharField(max_length=150)
     cpf = models.CharField(max_length=14)
     pis = models.CharField(max_length=14)
@@ -225,13 +229,16 @@ class Rescisao(Base):
 class Pagamento(Base):
     func = models.ForeignKey(Funcionario, on_delete=models.CASCADE)
     pago = models.BooleanField(default=False)
+    valor = models.FloatField(null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.func.cod} - {self.valor}'
 
 class Holerite(Base):
     class Tipo(models.TextChoices):
         AD = 'ADIANTAMENTO'
         FM = 'FOLHA MENSAL'
-        AD13 = 'ADIANTAMENTO 13º' 
+        AD13 = 'ADIANTAMENTO 13º'
         FM13 = 'PAGAMENTO 13º'
 
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
@@ -240,6 +247,8 @@ class Holerite(Base):
     enviado = models.BooleanField(default=False)
     funcs = models.ManyToManyField(Pagamento)
 
+    def __str__(self):
+        return f'{self.emp} - {self.comp} - {self.tipo}'
 
 class Obras(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
@@ -353,11 +362,22 @@ class Imposto(Base):
     valor = models.FloatField()
     comp = models.DateField()
     vcto = models.DateField(null=True, blank=True)
+    identificador = models.CharField(max_length=30, null=True, blank=True)
+    pix = models.CharField(max_length=250, null=True, blank=True)
     enviado = models.BooleanField(default=False)
     pago = models.BooleanField(default=False)
+    arquivo = models.FileField(upload_to='arquivos/')
 
     def __str__(self):
         return f'{self.emp} - {self.nome} - {self.valor} - {self.comp}'
+
+
+class TiposGuia(Base):
+    nome = models.CharField(max_length=80)
+    ident_titular = models.CharField(max_length=80)
+    padrao_regex = models.CharField(max_length=100)
+    ident_tipo = models.CharField(max_length=80)
+    
 
 '''from datetime import datetime
 from empbase.models import Empresa, Contribuintes, Escritorio

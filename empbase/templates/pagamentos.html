@@ -1,6 +1,26 @@
 {% load static %}
 {% include 'header.html' %}
 {% include 'links.html' %}
+
+{% if user.is_superuser %}
+    <div class="accordion borda">
+        <div class="accordion-main flexstart">
+            <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Importar arquivo:</p>
+        </div>
+        <div class="accordion-content hidden">
+            <div id="dragNdrop" class="dragNdrop">
+                <div>
+                    <form id="uploadarquivo">
+                        <input id="modelo" type="hidden" value="pagamentos">
+                        <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                        <input id="arquivo" name="arquivo" type="file">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
 <div class="abasgrupo">
     <p class="abasmenu {% if adiantamento %}abaativa{% endif %}">Adiantamento</p>
     <p class="abasmenu {% if not adiantamento %}abaativa{% endif %}">Folha Mensal</p>
@@ -29,12 +49,23 @@
         {% for pagamento in adiantamento %}
             <div class="borda padding-sm empresas pesquisa_alvo" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
                 <p style="text-align: center;"><span class="funcnome">{{ pagamento.func.nome }}</span></p>
+                <p><span class="funcnome">Valor: R$ {{ pagamento.valor }}</span></p>
                 <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
                     <span>Pago:</span>
                     {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar statustrue"></i> {% else %} <i class="fa-solid fa-money-check-dollar statusfalse"></i> {% endif %}                     
                 </div>
             </div>
         {% endfor %}
+        {% for pagamento in adiantamento_pago %}
+        <div class="borda padding-sm empresas pesquisa_alvo" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
+            <p style="text-align: center;"><span class="funcnome">{{ pagamento.func.nome }}</span></p>
+            <p style="text-align: center;"><span class="funcnome">{{ pagamento.valor }}</span></p>
+            <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
+                <span>Pago:</span>
+                {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar statustrue"></i> {% else %} <i class="fa-solid fa-money-check-dollar statusfalse"></i> {% endif %}                     
+            </div>
+        </div>
+    {% endfor %}
     </div>
 </div>
 
@@ -44,6 +75,7 @@
         {% for pagamento in folha_mensal %}
             <div class="borda padding-sm empresas pesquisa_alvo" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
                 <p style="text-align: center;"><span class="funcnome">{{ pagamento.func.nome }}</span></p>
+                <p style="text-align: center;"><span class="funcnome">{{ pagamento.valor }}</span></p>
                 <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
                     <span>Pago:</span>
                     {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar statustrue"></i> {% else %} <i class="fa-solid fa-money-check-dollar statusfalse"></i> {% endif %}                        
@@ -60,6 +92,7 @@
             {% for pagamento in adiantamento13 %}
                 <div class="borda padding-sm empresas pesquisa_alvo" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
                     <p style="text-align: center;"><span class="funcnome">{{ pagamento.func.nome }}</span></p>
+                    <p style="text-align: center;"><span class="funcnome">{{ pagamento.valor }}</span></p>
                     <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
                         <span>Pago:</span>
                         {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar statustrue"></i> {% else %} <i class="fa-solid fa-money-check-dollar statusfalse"></i> {% endif %}                        
@@ -77,6 +110,7 @@
         {% for pagamento in pagamento13 %}
             <div class="borda padding-sm empresas pesquisa_alvo" style="height: 8rem; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; align-content: space-between; width:16rem; margin: 0.5rem;">
                 <p style="text-align: center;"><span class="funcnome">{{ pagamento.func.nome }}</span></p>
+                <p style="text-align: center;"><span class="funcnome">{{ pagamento.valor }}</span></p>
                 <div {% if pagamento.pago == True %} class="confere csuccess observacao" {% else %} class="confere cdanger observacao" {% endif %} id="{{ pagamento.id }}" onclick="pagamento(this, pagamento)" style="height: 2.5rem;">
                     <span>Pago:</span>
                     {% if pagamento.pago == True %} <i class="fa-solid fa-hand-holding-dollar statustrue"></i> {% else %} <i class="fa-solid fa-money-check-dollar statusfalse"></i> {% endif %}                        

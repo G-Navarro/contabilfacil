@@ -121,8 +121,9 @@ class FuncionarioTodos(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         funcs = ua.emp.funcionario_set.all().order_by('-cod')
         if funcs:
             func = None if funcs == 0 else funcs.filter(cod=request.GET['funcid'])[0] if 'funcid' in request.GET else funcs[0]
@@ -160,8 +161,9 @@ class Funcionario(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         funcs = ua.emp.funcionario_set.all().order_by('-cod')
         func = funcs.get(cod=kwargs['funcid'])
         context = {
@@ -188,8 +190,9 @@ class Funcionario(TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rpost = request.POST
         ponto = Ponto()
         if 'falta' in rpost:
@@ -295,58 +298,55 @@ class Pagamentos(TemplateView):
     form_class = FuncionarioForm()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         holerites = ua.emp.holerite_set.filter(comp=ua.comp)
-        context = {
-            'ua': ua,
-            'titulo': 'Pagamentos - ' + ua.emp.apelido
-        }
         funcs = ua.emp.funcionario_set.filter(demitido=False).filter(admissao__lte=ua.comp)
-        if holerites:
-            ad = holerites.get(tipo=Holerite.Tipo.AD)
-            fm = holerites.get(tipo=Holerite.Tipo.FM)
-        else:
+        '''if not holerites and funcs:
             #cria adiantamento
             ad = ua.emp.holerite_set.create(tipo=Holerite.Tipo.AD, comp=ua.comp)
             #cria folha mensal
             fm = ua.emp.holerite_set.create(tipo=Holerite.Tipo.FM, comp=ua.comp)
-        if len(funcs) != ad.funcs.count() or len(funcs) != fm.funcs.count():
             for func in funcs:
-                if func.admissao <= ua.comp:
-                    if ua.comp.replace(day=20) > func.admissao:
-                        pgad = Pagamento.objects.create(func=func)
-                        ad.funcs.add(pgad)
-                    pgfm = Pagamento.objects.create(func=func)
-                    fm.funcs.add(pgfm)
-                    
-        context['adiantamento'] = ad.funcs.get_queryset().order_by('func__nome')
-        context['folha_mensal'] = fm.funcs.get_queryset().order_by('func__nome')
-        if ua.comp.month == 11:
-            ad13 = ua.emp.holerite_set.filter(tipo=Holerite.Tipo.AD13, comp=ua.comp).first()
-            if not ad13:
+                pgad = Pagamento.objects.create(func=func)
+                ad.funcs.add(pgad)
+                pgfm = Pagamento.objects.create(func=func)
+                fm.funcs.add(pgfm)
+            if ua.comp.month == 11:
                 ad13 = ua.emp.holerite_set.create(tipo=Holerite.Tipo.AD13, comp=ua.comp)
-            if len(funcs) != ad13.funcs.count():
                 for func in funcs:
-                    if ua.comp.replace(day=15) > func.admissao:
-                        pg = Pagamento.objects.create(func=func)
-                        ad13.funcs.add(pg)
-            context['adiantamento13'] = ad13.funcs.get_queryset().order_by('func__nome')
-        if ua.comp.month == 12:
-            fm13 = ua.emp.holerite_set.filter(tipo=Holerite.Tipo.FM13, comp=ua.comp).first()
-            if not fm13:
+                    pg = Pagamento.objects.create(func=func)
+                    ad13.funcs.add(pg)
+            if ua.comp.month == 12:
                 fm13 = ua.emp.holerite_set.create(tipo=Holerite.Tipo.FM13, comp=ua.comp)
-            if len(funcs) != fm13.funcs.count():
                 for func in funcs:
-                    if ua.comp.replace(day=15) > func.admissao:
-                        pg = Pagamento.objects.create(func=func)
-                        fm13.funcs.add(pg)
-            context['pagamento13'] = fm13.funcs.get_queryset().order_by('func__nome')
+                    pg = Pagamento.objects.create(func=func)
+                    fm13.funcs.add(pg)'''
+        context = {
+            'ua': ua,
+            'titulo': 'Pagamentos - ' + ua.emp.apelido
+        }
+        adiantamento = ua.emp.holerite_set.filter(comp=ua.comp, tipo='ADIANTAMENTO').first()
+        if adiantamento:
+            context['adiantamento'] = adiantamento.funcs.exclude(pago=True).order_by('func__nome')
+            context['adiantamento_pago'] = adiantamento.funcs.filter(pago=True).order_by('func__nome')
+        folha_mensal = ua.emp.holerite_set.filter(comp=ua.comp, tipo='FOLHA MENSAL').first()
+        if folha_mensal:
+            context['folha_mensal'] = folha_mensal.funcs.exclude(pago=True).order_by('func__nome')
+            context['folha_mensal_pago'] = folha_mensal.funcs.filter(pago=True).order_by('func__nome') 
+        adiantamento13 = ua.emp.holerite_set.filter(comp=ua.comp, tipo='ADIANTAMENTO 13º').first()
+        if adiantamento13:
+            adiantamento13 = adiantamento13.funcs.get_queryset().order_by('func__nome')
+            context['adiantamento13'] = adiantamento13.order_by('pago')
+        pagamento13 = ua.emp.holerite_set.filter(comp=ua.comp, tipo='PAGAMENTO 13º').first()
+        if pagamento13:
+            pagamento13 = pagamento13.funcs.get_queryset().order_by('func__nome')
+            context['pagamento13'] = pagamento13.order_by('pago')
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
         ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         rpost = request.POST
         if 'pagamento' in rpost:
             pg = Pagamento.objects.get(id=rpost['pagamento'])
@@ -363,8 +363,9 @@ class Notas(TemplateView):
     template_name = 'notas.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         notas = ua.emp.notas_set.filter(comp__year=ua.comp.year, comp__month=ua.comp.month).order_by('-numero')
         context = {
             'ua': ua,
@@ -388,7 +389,6 @@ class Notas(TemplateView):
     
     def post(self, request, **kwargs):
         ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         rpost = request.POST
         if rpost['comp']:
             ua.comp = f"{rpost['comp']}-01"
@@ -401,8 +401,9 @@ class Obras(TemplateView):
     template_name = 'obras.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         context = {
             'ua': ua,
             'titulo': 'Obras - '+ua.emp.apelido,
@@ -416,7 +417,6 @@ class Obras(TemplateView):
     def post(self, request, **kwargs):
         ua, acesso = getUA(request.user, kwargs['empid'])
         rpost = request.POST
-        print(rpost)
         obra = ua.emp.obras_set.get(id=rpost['obraid'])
         if rpost['cod'] != 'None':
             obra.cod=rpost['cod']
@@ -432,13 +432,14 @@ class Alocacao(TemplateView):
     template_name = 'alocacoes.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()        
         alocs = ua.emp.alocacao_set.filter(comp__year=ua.comp.year)
         alocs = alocs.filter(comp__month=ua.comp.month).order_by('nota__numero')
-        rpost = request.POST
-        if 'alocacaoid' in rpost:
-            alterar = ua.emp.alocacao_set.get(id=rpost['alocacaoid'])
+
+        if 'alocacaoid' in request.GET:
+            alterar = ua.emp.alocacao_set.get(id=kwargs['alocacaoid'])
         else:
             alterar = None
         if len(alocs) == 0:
@@ -453,8 +454,9 @@ class Alocacao(TemplateView):
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rpost = request.POST
         if 'num' in rpost:
             num = subs(rpost['num'])
@@ -462,23 +464,22 @@ class Alocacao(TemplateView):
                 try:
                     obra = ua.emp.obras_set.get(cnpj__contains=num)
                 except:
-                    return HttpResponseRedirect('0', {'msg': 'Obra não existe'})
+                    return HttpResponseRedirect(f'{kwargs["empid"]}/{kwargs["comp"]}', {'msg': 'Obra não existe'})
             if len(num) == 12:
                 try:
                     obra = ua.emp.obras_set.get(cno__contains=num)
                 except:
-                    return HttpResponseRedirect('0', {'msg': 'Obra não existe'})
+                    return HttpResponseRedirect(f'{kwargs["empid"]}/{kwargs["comp"]}', {'msg': 'Obra não existe'})
             if obra:
                 try:
-                    alocs = ua.emp.alocacao_set.filter(comp__year=ua.comp.year)
-                    alocs = alocs.filter(comp__month=ua.comp.month)
+                    alocs = ua.emp.alocacao_set.filter(comp__year=ua.comp.year, comp__month=ua.comp.month)
                     alocs = alocs.get(obra=obra)
-                    return HttpResponseRedirect('0', {'msg': 'Obra não existe'})
+                    return HttpResponseRedirect(f'{kwargs["comp"]}', {'msg': 'Obra não existe'})
                 except:
                     obracriada = ua.emp.alocacao_set.create(emp=ua.emp, obra=obra, comp=ua.comp)
-                    return HttpResponseRedirect(f'{obracriada.id}')
+                    return HttpResponseRedirect(f'{kwargs["comp"]}/alocacaoid={obracriada.id}')
             else:
-                return HttpResponseRedirect('0')
+                return HttpResponseRedirect(f'{kwargs["comp"]}')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -486,8 +487,9 @@ class Impostos(TemplateView):
     template_name = 'impostos.html'
     
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         context = {
             'ua': ua,
             'impostos': ua.emp.imposto_set.order_by('comp'),
@@ -514,8 +516,9 @@ class Tarefas(TemplateView):
 
     def get(self, request, **kwargs):
         escr = request.user.ultimoacesso.escr
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rget = request.GET
         emps = acesso.filter(situacao='Ativa')
         form = ImpostoForm()
@@ -544,8 +547,9 @@ class Tarefas(TemplateView):
     
     def post(self, request, **kwargs):
         escr = request.user.ultimoacesso.escr
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rpost = request.POST
         if 'deletar' in rpost:
             imp = Imposto.objects.get(id=rpost['deletar'], emp__escr=escr)
@@ -586,8 +590,9 @@ class Tarefas(TemplateView):
 class RelatorioPonto(TemplateView):
     template_name = 'relatorio_ponto.html'
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
         context = {
             'ua': ua,
@@ -601,8 +606,9 @@ class RelatorioPonto(TemplateView):
 class CartaoPonto(TemplateView):
     template_name = 'cartao_ponto.html'
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()            
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         funcs = ua.emp.funcionario_set.filter(Q(demitido=False) | Q(demissao__gte=ua.comp)).distinct().order_by('nome')
         func = None if not funcs else funcs.filter(cod=request.GET['funcid'])[0] if 'funcid' in request.GET else funcs[0]
         if ua.comp >= func.admissao:
@@ -652,8 +658,9 @@ class CartaoPonto(TemplateView):
         return render(request, self.template_name, context)
 
     def post(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rpost = request.POST
         if 'diadetrabalhoinfoinicioem' in rpost and 'funcid' in rpost:
             func = ua.emp.funcionario_set.get(cod=rpost['funcid'])
@@ -773,9 +780,8 @@ class Ponto(TemplateView):
                 diadetrabalho.save()
 
     def get(self, request, **kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         func = request.user.funcionario_set.get()
+        ua, acesso = getUA(request.user, func.emp.cod )
         hoje = date.today()
         #cria mes inteiro de dias de trabalho para o funcionario
         if ua.comp >= func.admissao:
@@ -805,7 +811,6 @@ class Ponto(TemplateView):
     def post(self, request, **kwargs):
         rpost = request.POST
         ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         func = ua.emp.funcionario_set.get(cod=request.user.funcionario_set.get().cod)
         #agora = agora.astimezone(timezone_emp)
         hoje = date.today()
@@ -969,8 +974,9 @@ class Usuarios(TemplateView):
     
     def get(self, request, **kwargs):
         user = request.user
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         rget = request.GET
         if user.eh_auxiliar:
             return HttpResponseRedirect('funcionarios')
@@ -983,7 +989,7 @@ class Usuarios(TemplateView):
         useraltera = '' 
         allusers = Usuario.objects.filter(temacesso__emp__cod=ua.emp.cod)      
         if 'userid' in rget:
-            useraltera = ua.emp.escr.temacesso_set.get(user__id=get_original_id(rget['userid'], allusers)).user
+            useraltera = ua.escr.temacesso_set.get(user__id=get_original_id(rget['userid'], allusers)).user
             if user.eh_supervisor and useraltera.is_superuser:
                 useraltera = ''
         context = {
@@ -1001,7 +1007,6 @@ class Usuarios(TemplateView):
     
     def post(self, request, **kwargs):
         ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         rpost = request.POST
         if 'bloqueiauser' in rpost:
             #bloqueia usuario
@@ -1064,8 +1069,9 @@ class AlteraSenha(TemplateView):
     template_name = 'alterasenha.html'
 
     def get(self, request,**kwargs):
-        ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+        ua, acesso = getUA(request.user, kwargs['empid'])        
+        ua.comp = datetime.strptime(kwargs['comp'], "%m-%y").date()
+        ua.save()
         context = {
             'ua': ua,
             'acesso': acesso,
@@ -1089,11 +1095,10 @@ def logout_view(request):
     return redirect('')
 
 
-def cadastrar(request):
+def cadastrar(request, **kwargs):
     rpost = request.POST
     def atu_ultimoacesso(emp, comp=None):
         ua, acesso = getUA(request.user, kwargs['empid'])
-        ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
         ua.emp = emp
         if comp:
             ua.comp = comp
@@ -1103,23 +1108,23 @@ def cadastrar(request):
         return JsonResponse({'msg': 'sucesso', 'redirect': '/empresas'})
     if rpost['modelo'] == 'funcionarios':
         emp = criar_funcionario(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/funcionarios/{emp.cod}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/funcionarios/{emp.cod}/{ua.comp.strftime("%m-%y")}'})
     if rpost['modelo'] == 'notas':
         emp, comp = baixanotas(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/notas/{emp.cod}/{datetime.strptime(comp, "%m-%y")}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/notas/{emp.cod}/{comp.strftime("%m-%y")}'})
     if rpost['modelo'] == 'obras':
         emp = criar_obra(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/obras/{emp.cod}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/obras/{emp.cod}/{ua.comp.strftime("%m-%y")}'})
     if rpost['modelo'] == 'impostos':
         emp, comp = cad_imposto(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/impostos/{emp.cod}/{datetime.strptime(comp, "%m-%y")}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/impostos/{emp.cod}/{comp.strftime("%m-%y")}'})
     if rpost['modelo'] == 'pagamentos':
         emp, comp = cad_pagamento(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/pagamentos/{emp.cod}/{datetime.strptime(comp, "%m-%y")}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/pagamentos/{emp.cod}/{comp.strftime("%m-%y")}'})
+    
 
 def buscadados(request, **kwargs):
     ua, acesso = getUA(request.user, kwargs['empid'])
-    ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
     emp = ua.emp
     tipo = request.GET['tipo']
     val = request.GET['val']
@@ -1153,7 +1158,6 @@ def buscadados(request, **kwargs):
 
 def alocacao_edit(request, **kwargs):
     ua, acesso = getUA(request.user, kwargs['empid'])
-    ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
     rget = request.GET
     if rget['tipo'] == 'cadastrar':
         obra = ua.emp.alocacao_set.get(obra__id=rget['obraid'], comp__year=ua.comp.year, comp__month=ua.comp.month)
@@ -1181,8 +1185,7 @@ def alocacao_edit(request, **kwargs):
         return JsonResponse({'res':'sucesso'})
     
 def tramite_altera(request, **kwargs):
-    ua, acesso = getUA(request.user, kwargs['empid'])
-    ua.comp = datetime.strptime(kwargs['comp'], "%m-%Y").date()
+    acesso = request.user.temacesso.emp.all()
     rpost = request.POST
     tramiteid = rpost['tramite']
     emp = acesso.filter(cod=rpost['emp']).first()

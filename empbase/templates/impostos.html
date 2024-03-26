@@ -2,6 +2,23 @@
 {% include 'header.html' %}
 {% include 'links.html' %}
 
+<div class="accordion borda">
+    <div class="accordion-main flexstart">
+        <p><i class="fa-solid fa-file-import" style="color: #6da5f8"></i> Processar guias:</p>
+    </div>
+    <div class="accordion-content hidden">
+        <div id="dragNdrop" class="dragNdrop">
+            <div>
+                <form id="uploadarquivo" enctype="multipart/form-data">
+                    <input id="modelo" type="hidden" value="notas">
+                    <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
+                    <input id="arquivo" name="arquivo" type="file">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="grid-main">
     {% for imp in impostos %}
         <div class="borda padding-sm" style="margin: 0.2rem;">
