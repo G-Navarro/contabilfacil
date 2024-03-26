@@ -2,7 +2,6 @@ import calendar, hashlib, re, copy, pytz
 from typing import Any
 from django import http
 from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 from datetime import date, time, timedelta, datetime
 from empbase.forms import FuncionarioForm, ImpostoForm
 from django.forms.models import model_to_dict
@@ -17,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from usuarios.models import Usuario
 from django.contrib.auth.models import Permission
-from empbase.models import Competencia, Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
+from empbase.models import Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
 
 def hash_id(id):
     # Convert the ID to a string

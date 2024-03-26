@@ -34,13 +34,10 @@ def login_api(request):
 def envioguias(request):
     if request.method == 'POST':
         user = request.user
-        print(user)
         ua = UltimoAcesso.objects.filter(user=user).first()
         acesso = user.temacesso.emp.filter(escr=ua.escr)
-        print(acesso)
         if 'info' in request.POST:
             emp = acesso.filter(cnpj=request.POST['info']).first()
-            print(emp)
             return JsonResponse({'msg':emp.nome})
 
 
@@ -67,10 +64,10 @@ def acessa():
         print("Login failed. Status code:", response.status_code)
 
 
-def consulta(info, sessionid):
+def consulta(file, sessionid):
         url = 'http://127.0.0.1:8000/envioguias'
         headers = {'Cookie': f'sessionid={sessionid}'}
-        data = {'info': info}
-        response = requests.post(url, headers=headers, data=data)
+        with open(file, 'rb') as file:
+            response = requests.post(url, headers=headers, files={'file': file})
         print(response.json())
 '''
