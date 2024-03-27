@@ -10,6 +10,7 @@ from requests import Response
 from ecpsite import settings
 from empbase.models import Empresa, Escritorio, UltimoAcesso
 from empbase.views import getUA
+from envioemails.processapdf import processa_guia
 
 
 @csrf_exempt  # Disable CSRF protection for this view
@@ -33,12 +34,12 @@ def login_api(request):
 @csrf_exempt
 def envioguias(request):
     if request.method == 'POST':
+        print(request.POST, request.FILES)
         user = request.user
         ua = UltimoAcesso.objects.filter(user=user).first()
         acesso = user.temacesso.emp.filter(escr=ua.escr)
-        if 'info' in request.POST:
-            emp = acesso.filter(cnpj=request.POST['info']).first()
-            return JsonResponse({'msg':emp.nome})
+        emp = processa_guia(request.FILES['file'], user)
+        return JsonResponse({'msg':emp.nome})
 
 
 '''        
@@ -68,6 +69,7 @@ def consulta(file, sessionid):
         url = 'http://127.0.0.1:8000/envioguias'
         headers = {'Cookie': f'sessionid={sessionid}'}
         with open(file, 'rb') as file:
+            print(file)
             response = requests.post(url, headers=headers, files={'file': file})
         print(response.json())
 '''
