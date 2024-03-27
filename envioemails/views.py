@@ -1,10 +1,10 @@
-import datetime
-import json
+import json, tempfile, datetime
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, JsonResponse
+from django.core.files.base import ContentFile
 from django.views.generic import TemplateView
 from requests import Response
 from ecpsite import settings
@@ -34,12 +34,24 @@ def login_api(request):
 @csrf_exempt
 def envioguias(request):
     if request.method == 'POST':
-        print(request.POST, request.FILES)
         user = request.user
         ua = UltimoAcesso.objects.filter(user=user).first()
         acesso = user.temacesso.emp.filter(escr=ua.escr)
-        emp = processa_guia(request.FILES['file'], user)
-        return JsonResponse({'msg':emp.nome})
+        temp_files = []
+        for uploaded_file in request.FILES.getlist('file'):
+            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_file.write(uploaded_file.read())
+            temp_file.flush()
+            temp_file.seek(0)
+            temp_files.append(temp_file)
+        emp = processa_guia(temp_files, user)
+        processed_results = []
+        '''for temp_file in temp_files:
+            emp = processa_guia(temp_file.name, user)  # Assuming processa_guia accepts file objects
+            processed_results.append(emp.nome)
+            temp_file.close()'''
+        
+        return JsonResponse({'msg': processed_results})
 
 
 '''        
@@ -65,11 +77,11 @@ def acessa():
         print("Login failed. Status code:", response.status_code)
 
 
-def consulta(file, sessionid):
+def consulta(files, sessionid):
         url = 'http://127.0.0.1:8000/envioguias'
         headers = {'Cookie': f'sessionid={sessionid}'}
-        with open(file, 'rb') as file:
-            print(file)
-            response = requests.post(url, headers=headers, files={'file': file})
-        print(response.json())
+        for file in files:
+            with open(file, 'rb') as file:
+                response = requests.post(url, headers=headers, files={'file': file})
+                print(response.json())
 '''

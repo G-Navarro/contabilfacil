@@ -356,6 +356,11 @@ class TemAcesso(models.Model):
         ordering = ['user']
 
 
+class Rel_Arquivos(Base):
+    nome = models.CharField(max_length=80)
+    arquivo = models.FileField(upload_to='arquivos/', null=True, blank=True)
+
+
 class Imposto(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     nome = models.CharField(max_length=80)
@@ -363,10 +368,12 @@ class Imposto(Base):
     comp = models.DateField()
     vcto = models.DateField(null=True, blank=True)
     identificador = models.CharField(max_length=30, null=True, blank=True)
+    barcode = models.CharField(max_length=80, null=True, blank=True)
     pix = models.CharField(max_length=250, null=True, blank=True)
     enviado = models.BooleanField(default=False)
     pago = models.BooleanField(default=False)
-    arquivo = models.FileField(upload_to='arquivos/')
+    guia = models.FileField(upload_to='arquivos/', null=True, blank=True)
+    arquivos = models.ForeignKey(Rel_Arquivos, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return f'{self.emp} - {self.nome} - {self.valor} - {self.comp}'
@@ -375,9 +382,14 @@ class Imposto(Base):
 class TiposGuia(Base):
     nome = models.CharField(max_length=80)
     ident_titular = models.CharField(max_length=80)
-    padrao_regex = models.CharField(max_length=100)
-    ident_tipo = models.CharField(max_length=80)
-    
+    ident_titular_regex = models.CharField(max_length=100, null=True, blank=True)
+    ident_tipo_guia = models.CharField(max_length=80)
+    ident_cod_guia = models.CharField(max_length=80)
+    forma_pagamento = models.CharField(max_length=20, null=True, blank=True)
+    comp_regex = models.CharField(max_length=100, default='(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)/\d{4}')
+
+    def __str__(self):
+        return self.nome
 
 '''from datetime import datetime
 from empbase.models import Empresa, Contribuintes, Escritorio

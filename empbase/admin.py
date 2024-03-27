@@ -1,5 +1,5 @@
 from django.contrib import admin
-from empbase.models import Alocacao, Base, Empresa, Funcionario, Holerite, Notas, Obras, Escritorio, Pagamento, TemAcesso, Imposto, Turno, UltimoAcesso
+from empbase.models import Alocacao, Base, Empresa, Funcionario, Holerite, Notas, Obras, Escritorio, Pagamento, TemAcesso, Imposto, TiposGuia, Turno, UltimoAcesso
 
 admin.site.register(Escritorio)
 admin.site.register(Empresa)
@@ -13,3 +13,4 @@ admin.site.register(Turno)
 admin.site.register(Holerite)
 admin.site.register(Pagamento)
 admin.site.register(Base)
+admin.site.register(TiposGuia)
