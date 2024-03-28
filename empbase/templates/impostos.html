@@ -9,10 +9,11 @@
     <div class="accordion-content hidden">
         <div id="dragNdrop" class="dragNdrop">
             <div>
-                <form id="uploadarquivo" enctype="multipart/form-data">
+                <form id="uploadguias" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
                     <input id="modelo" type="hidden" value="notas">
-                    <label for="arquivo">Clique para adcionar ou solte o arquivo</label>
-                    <input id="arquivo" name="arquivo" type="file">
+                    <label for="arquivos">Clique para adcionar ou solte o arquivo</label>
+                    <input id="arquivos" name="arquivos" type="file" onchange="this.form.submit();">
                 </form>
             </div>
         </div>
@@ -34,5 +35,10 @@
     {% endfor %}
 </div>
 {% include 'footer.html' %}
+<script>
+    function submitForm() {
+        document.getElementById("uploadarquivo").submit();
+    }
+</script>
 <script src="{% static 'js/processa.js' %}"></script>
 </html>

@@ -9,7 +9,6 @@ from django.views.generic import TemplateView
 from requests import Response
 from ecpsite import settings
 from empbase.models import Empresa, Escritorio, UltimoAcesso
-from empbase.views import getUA
 from envioemails.processapdf import processa_guia
 
 
@@ -37,21 +36,8 @@ def envioguias(request):
         user = request.user
         ua = UltimoAcesso.objects.filter(user=user).first()
         acesso = user.temacesso.emp.filter(escr=ua.escr)
-        temp_files = []
-        for uploaded_file in request.FILES.getlist('file'):
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
-            temp_file.write(uploaded_file.read())
-            temp_file.flush()
-            temp_file.seek(0)
-            temp_files.append(temp_file)
-        emp = processa_guia(temp_files, user)
-        processed_results = []
-        '''for temp_file in temp_files:
-            emp = processa_guia(temp_file.name, user)  # Assuming processa_guia accepts file objects
-            processed_results.append(emp.nome)
-            temp_file.close()'''
-        
-        return JsonResponse({'msg': processed_results})
+        emp = processa_guia(request.FILES.getlist('file'), user)
+        return JsonResponse({'msg': 'YAY'}, status=200)
 
 
 '''        

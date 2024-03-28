@@ -14,6 +14,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
+from envioemails.processapdf import processa_guia
+from envioemails.views import envioguias
 from usuarios.models import Usuario
 from django.contrib.auth.models import Permission
 from empbase.models import Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
@@ -499,6 +501,9 @@ class Impostos(TemplateView):
     def post(self, request, **kwargs):
             ua, acesso = getUA(request.user, kwargs['empid'])
             rpost = request.POST
+            if request.FILES:
+                file_list = list(request.FILES.values())
+                processa_guia(file_list, request.user)
             if 'imposto' in rpost:
                 imp = ua.emp.imposto_set.get(id=rpost['imposto'])
                 if imp.pago:

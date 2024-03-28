@@ -361,9 +361,22 @@ class Rel_Arquivos(Base):
     arquivo = models.FileField(upload_to='arquivos/', null=True, blank=True)
 
 
+class TiposGuia(Base):
+    nome = models.CharField(max_length=80)
+    ident_titular = models.CharField(max_length=80)
+    ident_titular_regex = models.CharField(max_length=100, null=True, blank=True)
+    ident_tipo_guia = models.CharField(max_length=80)
+    ident_cod_guia = models.CharField(max_length=80)
+    forma_pagamento = models.CharField(max_length=20, null=True, blank=True)
+    comp_regex = models.CharField(max_length=100, default='(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)/\d{4}')
+
+    def __str__(self):
+        return self.nome
+
+
 class Imposto(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
-    nome = models.CharField(max_length=80)
+    tipoguia = models.ForeignKey(TiposGuia, on_delete=models.DO_NOTHING, null=True, blank=True)
     valor = models.FloatField()
     comp = models.DateField()
     vcto = models.DateField(null=True, blank=True)
@@ -378,18 +391,6 @@ class Imposto(Base):
     def __str__(self):
         return f'{self.emp} - {self.nome} - {self.valor} - {self.comp}'
 
-
-class TiposGuia(Base):
-    nome = models.CharField(max_length=80)
-    ident_titular = models.CharField(max_length=80)
-    ident_titular_regex = models.CharField(max_length=100, null=True, blank=True)
-    ident_tipo_guia = models.CharField(max_length=80)
-    ident_cod_guia = models.CharField(max_length=80)
-    forma_pagamento = models.CharField(max_length=20, null=True, blank=True)
-    comp_regex = models.CharField(max_length=100, default='(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)/\d{4}')
-
-    def __str__(self):
-        return self.nome
 
 '''from datetime import datetime
 from empbase.models import Empresa, Contribuintes, Escritorio
