@@ -251,7 +251,7 @@ def criar_funcionario(arq, usuario):
                     cria_periodo(funccad, datacalculo)
             else:
                 if not func.demitido:
-                    func.funcacesso = Usuario.objects.create_funcionario(usuario=str(contratante.cod) + func.cod + func.nome.split(' ')[0], nome=func.nome.split(' ')[0], snome=func.nome.split(' ')[-1], password=func.cpf[0:6])
+                    func.funcacesso = Usuario.objects.create_funcionario(usuario=str(contratante.cod) + str(func.cod) + func.nome.split(' ')[0], nome=func.nome.split(' ')[0], snome=func.nome.split(' ')[-1], password=func.cpf[0:6])
                     UltimoAcesso.objects.create(escr=contratante.escr,emp=contratante,user=func.funcacesso,comp=date.today())
                     temacesso = TemAcesso.objects.create(user=func.funcacesso)
                     temacesso.escr.add(contratante.escr)

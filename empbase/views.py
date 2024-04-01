@@ -496,6 +496,10 @@ class Impostos(TemplateView):
             'impostos': ua.emp.imposto_set.order_by('comp'),
             'titulo': 'Impostos - '+ua.emp.apelido,
             }
+        if 'msg' in request.session:
+            msg = request.session.get('msg', None)
+            context['msg'] = msg
+            request.session.pop('msg', None)
         return render(request, self.template_name, context)
     
     def post(self, request, **kwargs):
@@ -503,7 +507,9 @@ class Impostos(TemplateView):
             rpost = request.POST
             if request.FILES:
                 file_list = list(request.FILES.values())
-                processa_guia(file_list, request.user)
+                msg = processa_guia(file_list, request.user)
+                request.session['msg'] = msg
+                return HttpResponseRedirect(f'{kwargs["comp"]}')
             if 'imposto' in rpost:
                 imp = ua.emp.imposto_set.get(id=rpost['imposto'])
                 if imp.pago:

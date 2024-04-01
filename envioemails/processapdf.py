@@ -52,9 +52,10 @@ def extract_qr_code(pdf_path):
 def define_guia(pdf):
     for tipo_guia in TiposGuia.objects.all():
         teste = tipo_guia.ident_tipo_guia.split(',') if ',' in tipo_guia.ident_tipo_guia else [tipo_guia.ident_tipo_guia]
-        all_equal = all(x == teste[0] for x in teste)
-        print(all_equal, teste)
-        return tipo_guia
+        confirma = [x in pdf for x in teste]
+        print(confirma)
+        if all(confirma):
+            return tipo_guia
 
 
 def arquivos_temporarios(arquivos):
@@ -64,14 +65,16 @@ def arquivos_temporarios(arquivos):
         temp_file.write(uploaded_file.read())
         temp_file.flush()
         temp_file.seek(0)
-        temp_files.append(temp_file)
+        temp_files.append([temp_file, uploaded_file])
     return temp_files
+
 
 def processa_guia(arquivos, user):
     arquivos = arquivos_temporarios(arquivos)
-    for arquivo in arquivos:
+    for arquivo, guia in arquivos:
         pdf = ler_pdf(arquivo.name)
         tipo_guia = define_guia(pdf)
+        print(tipo_guia.nome)
         padrao_cnpj_base = re.search(r'\d{2}.\d{3}.\d{3}', pdf)
         padrao_cpf = re.search(r'\d{3}.\d{3}.\d{3}-\d{2}', pdf)
         cnpj = padrao_cnpj_base.group() + '0001' if padrao_cnpj_base else padrao_cpf.group()
@@ -83,8 +86,8 @@ def processa_guia(arquivos, user):
         date_objects = [datetime.strptime(date, '%d/%m/%Y') for date in datas]
         biggest_date = max(date_objects)
         vcto = biggest_date 
-        if biggest_date.date() < date.today(): 
-            break
+        '''if biggest_date.date() < date.today(): 
+            break'''
 
         #acha o valor
         valor_padrao = re.findall(r'\b\d+[\d,.]*,\d+\b', pdf)
@@ -93,11 +96,11 @@ def processa_guia(arquivos, user):
 
         #acha competencia
         comp = re.search(tipo_guia.comp_regex, pdf).group()
-        if len(comp) > 7:
+        if re.search(r'[a-zA-Z]+', comp):
             compsplit = comp.split('/')
-            comp = f'01/{meses[compsplit[0]]}/{compsplit[1]}'
+            comp = f'01/{subs(meses[compsplit[0]])}/{subs(compsplit[1])}'
         elif re.search(r'\d{2}/\d{4}', comp):
-            comp = re.search(r'\d{2}/\d{4}', comp).group()
+            comp = '01/' + re.search(r'\d{2}/\d{4}', comp).group()
         comp = datetime.strptime(comp, '%d/%m/%Y')
         #acha formas de pagamento 
         padrao_barcode = re.search(r'\d{11}\s\d\s\d{11}\s\d\s\d{11}\s\d\s\d{11}\s\d', pdf)
@@ -114,19 +117,19 @@ def processa_guia(arquivos, user):
         if guias:
             for guia in guias:
                 if guia.identificador == identificador:
-                    msg.append(f'Guia {guia.nome} da empresa {guia.emp.apelido} de {guia.comp.strftime("%m/%Y")} com identificador {guia.identificador} já existe')
+                    msg.append(f'Guia {guia.tipoguia.nome} da empresa {guia.emp.apelido} de {guia.comp.strftime("%m/%Y")} com identificador {guia.identificador} já existe')
         else:
             imposto = Imposto(
                 emp=emp,
                 tipoguia = tipo_guia,
-                valor=valor,
-                comp=comp,
-                vcto=vcto,
+                valor=f"{valor:.2f}",
+                comp=comp.date(),
+                vcto=vcto.date(),
                 identificador=identificador,
                 barcode=codigo_barra,
                 pix=copia_cola,
-                guia=arquivo
+                guia=guia
             )
+            imposto.save()
             msg.append(f'Guia {imposto.tipoguia.nome} da empresa {imposto.emp.apelido} de {imposto.comp.strftime("%m/%Y")} com identificador {imposto.identificador} foi criada')
-        print(msg)
-    return emp
+    return msg

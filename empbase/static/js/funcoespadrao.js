@@ -365,6 +365,11 @@ alakazam = (id) => {
     })
 }
 
+function clicacopia(texto) {
+    navigator.clipboard.writeText(texto);
+    showmsg('Copiado!')
+  }
+
 /*function pesquisa_alvo(obj) {
     var alvo = $(obj)
     var class_alvo = alvo.attr('id').split('_')[1];

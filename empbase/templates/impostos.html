@@ -22,11 +22,26 @@
 
 <div class="grid-main">
     {% for imp in impostos %}
-        <div class="borda padding-sm" style="margin: 0.2rem;">
-            <p>{{ imp.nome }}</p>
+        <div class="borda padding-sm sombra" style="margin: 0.2rem;">
+            <p>{{ imp.tipoguia.nome }}</p>
             <p>Competência: {{ imp.comp.month }}/{{ imp.comp.year }} </p>
             <p>R$ {{ imp.valor }}</p>
             <p>VCTO: {{ imp.vcto }}</p>
+            <p>Identificador: {{ imp.identificador }}</p>
+            {% if imp.pix %}
+            <div>
+                <input type="hidden" value="{{ imp.pix }}">
+                <p class="padding-sm csuccess" style="border-radius: 4px; display: inline-block;" onclick="clicacopia('{{ imp.pix }}')">PIX copia e cola</p>
+            </div>
+            {% endif %}
+            {% if imp.barcode %}
+            <div>
+                <input type="hidden" value="{{ imp.barcode }}">
+                <p class="padding-sm csuccess" style="border-radius: 4px; display: inline-block;" onclick="clicacopia('{{ imp.barcode }}')">Código de barras</p>
+            </div>
+            {% endif %}
+            <a href="{{ imp.guia.url }}" target="_blank">View File</a>
+            <p>{{ imp.guia }}</p>
             <div {% if imp.pago == True %} class="confere csuccess" {% else %} class="confere borda cdanger" {% endif %} id="{{ imp.id }}" onclick="imposto_pago(this, pagamento)" style="height: 2.5rem;">
                 <span>Pago:</span>
                 {% if imp.pago == True %} <i class="fa-solid fa-file-circle-check"></i> {% else %} <i class="fa-solid fa-file-circle-xmark"></i> {% endif %}                        
@@ -34,6 +49,13 @@
         </div>
     {% endfor %}
 </div>
+{% if msg %}
+    <div class="borda padding-sm sombra">
+        {%for msg in msg%}
+            <p>{{ msg }}</p>
+        {%endfor%}
+    </div>
+{% endif %}
 {% include 'footer.html' %}
 <script>
     function submitForm() {
