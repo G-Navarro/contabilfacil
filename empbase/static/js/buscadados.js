@@ -101,7 +101,7 @@ deletaaloc = (obj, funcid, obraid) => {
     emp = path.match(/\d+\//g)[0].replace(/\//g, '')
     $.get({url:'/alocacao_edit/' + emp, data:{'tipo': 'excluir', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
-        obj.parent()[0].remove()
+        obj.parent()[0].remove() 
     }, error: (res) => {
         console.log(res)
     }})

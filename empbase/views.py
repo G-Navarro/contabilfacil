@@ -50,7 +50,7 @@ def getUA(user, empid):
     acesso = user.temacesso.emp.all()
     emp = acesso.filter(cod=empid).first()
     ua = emp.competencia_set.filter(finalizada=False).order_by('-comp').first()
-    if not ua:
+    if not ua: 
         ua = Competencia.objects.create(nome='Pessoal', comp=date.today(), finalizada=False, emp=emp)
     return ua, acesso
 

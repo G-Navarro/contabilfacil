@@ -197,7 +197,7 @@ def criar_funcionario(arq, usuario):
                         if 'RESCISÃO DE CONTRATO DE TRABALHO' in teste:
                             if not isinstance(df.loc[y + 2, 'CD'], float):
                                 demissao = df.loc[y + 2, 'CD']
-
+ 
 
             if not pd.isna(df.loc[n + 18, 'S']):
                 datanasc = df.loc[n + 18, 'S'].strftime("%Y-%m-%d")
