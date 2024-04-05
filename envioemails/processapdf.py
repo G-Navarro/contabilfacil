@@ -5,6 +5,7 @@ from pyzbar import pyzbar
 
 from empbase.models import Imposto, TiposGuia
 
+ola = 'boo'
 meses = {
     'Janeiro': '01',
     'Fevereiro': '02',
