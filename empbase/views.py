@@ -18,7 +18,7 @@ from envioemails.processapdf import processa_guia
 from envioemails.views import envioguias
 from usuarios.models import Usuario
 from django.contrib.auth.models import Permission
-from empbase.models import Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
+from empbase.models import Competencia, Funcionario, Empresa, Holerite, Imposto, Notas, Obras, Ferias, Pagamento, PeriodoAquisitivo, Rescisao, Alocacao, Base, Rubrica, TemAcesso, Tramites, UltimoAcesso
 
 def hash_id(id):
     # Convert the ID to a string
@@ -1117,14 +1117,16 @@ def cadastrar(request, **kwargs):
         emp = criar_empresa(request.FILES['arquivo'], request.user)
         return JsonResponse({'msg': 'sucesso', 'redirect': '/empresas'})
     if rpost['modelo'] == 'funcionarios':
+        comp = request.GET['comp']
         emp = criar_funcionario(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/funcionarios/{emp.cod}/{ua.comp.strftime("%m-%y")}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/funcionarios/{emp.cod}/{comp}'})
     if rpost['modelo'] == 'notas':
         emp, comp = baixanotas(request.FILES['arquivo'], request.user)
         return JsonResponse({'msg': 'sucesso', 'redirect': f'/notas/{emp.cod}/{comp.strftime("%m-%y")}'})
     if rpost['modelo'] == 'obras':
+        comp = request.GET['comp']
         emp = criar_obra(request.FILES['arquivo'], request.user)
-        return JsonResponse({'msg': 'sucesso', 'redirect': f'/obras/{emp.cod}/{ua.comp.strftime("%m-%y")}'})
+        return JsonResponse({'msg': 'sucesso', 'redirect': f'/obras/{emp.cod}/{comp}'})
     if rpost['modelo'] == 'impostos':
         emp, comp = cad_imposto(request.FILES['arquivo'], request.user)
         return JsonResponse({'msg': 'sucesso', 'redirect': f'/impostos/{emp.cod}/{comp.strftime("%m-%y")}'})
@@ -1135,10 +1137,10 @@ def cadastrar(request, **kwargs):
 
 def buscadados(request, **kwargs):
     ua, acesso = getUA(request.user, kwargs['empid'])
-    emp = ua.emp
+    emp = acesso.get(cod=kwargs['empid'])
     tipo = request.GET['tipo']
     val = request.GET['val']
-
+    print(emp, tipo, val)
     if tipo == "obracod":
         context = []
         obra= emp.obras_set.filter()

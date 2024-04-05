@@ -192,11 +192,11 @@ def criar_funcionario(arq, usuario):
                 vezes += 1
                 y = y + n + 45
                 if y <= len(col):
-                    teste = df.loc[y, 'BX']
+                    teste = df.loc[y, 'BY']
                     if not isinstance(teste, float):
                         if 'RESCISÃO DE CONTRATO DE TRABALHO' in teste:
-                            if not isinstance(df.loc[y + 2, 'CC'], float):
-                                demissao = df.loc[y + 2, 'CC']
+                            if not isinstance(df.loc[y + 2, 'CD'], float):
+                                demissao = df.loc[y + 2, 'CD']
 
 
             if not pd.isna(df.loc[n + 18, 'S']):

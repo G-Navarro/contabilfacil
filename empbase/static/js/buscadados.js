@@ -12,8 +12,8 @@ buscadadosobra = (obj, tipo) => {
     div = obj.parent()[0]
     clearTimeout(timer)
     timer = setTimeout(function(){
-        path = window.location.pathname.split('/')
-        emp = path[2]
+        path = window.location.pathname
+        emp = path.match(/\d+\//g)
         data = {'tipo': tipo, 'val':obj.val()}
         if(obj.val() == ''){} else {
         $.get({url: '/buscadados/' + emp, data,
@@ -42,11 +42,11 @@ buscadados = (obj, tipo) => {
     div = obj.parent()[0]
     clearTimeout(timer)
     timer = setTimeout(function(){
-        path = window.location.pathname.split('/')
-        emp = path[2]
+        path = window.location.pathname
+        emp = path.match(/\d+\//g)[0].replace(/\//g, '')
         data = {'tipo': tipo, 'val':obj.val()}
         if(obj.val() == ''){} else {
-        $.get({url: '/buscadados', emp, data,
+        $.get({url: '/buscadados/' + emp, data,
         success: (res)=>{
             if(res['msg']){
                 removedados()
@@ -71,7 +71,9 @@ addaloc = (obj, funcid, obraid) => {
     input = $($('#divinfo').prev().prev())
     input.val('')
     removedados()
-    $.get({url:'/alocacao_edit', data:{'tipo': 'cadastrar', 'funcid': funcid, 'obraid': obraid},
+    path = window.location.pathname
+    emp = path.match(/\d+\//g)[0].replace(/\//g, '')
+    $.get({url:'/alocacao_edit/' + emp, data:{'tipo': 'cadastrar', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
         if(res['msg']){
             showmsg(res['msg'])
@@ -95,7 +97,9 @@ addaloc = (obj, funcid, obraid) => {
 deletaaloc = (obj, funcid, obraid) => {
     obj = $(obj)
     prev = obj.prev()
-    $.get({url:'/alocacao_edit', data:{'tipo': 'excluir', 'funcid': funcid, 'obraid': obraid},
+    path = window.location.pathname
+    emp = path.match(/\d+\//g)[0].replace(/\//g, '')
+    $.get({url:'/alocacao_edit/' + emp, data:{'tipo': 'excluir', 'funcid': funcid, 'obraid': obraid},
     success: (res) => {
         obj.parent()[0].remove()
     }, error: (res) => {
