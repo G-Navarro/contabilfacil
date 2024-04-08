@@ -41,6 +41,7 @@ class Contribuintes(Base):
     def __str__(self):
         return f'{self.nome}'
 
+
 class Escritorio(models.Model):
     cnpj = models.CharField(max_length=30, unique=True, null=True, blank=True)
     inscest = models.CharField(max_length=30, blank=True, null=True)
@@ -103,6 +104,7 @@ class Empresa(Base):
     class Meta:
         ordering = ['escr', 'cod']
 
+
 class Turno(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
     semana = models.IntegerField(default=8)
@@ -121,6 +123,7 @@ class Turno(Base):
 
     def __str__(self):
         return f'{self.entrada} - {self.intervalo} - {self.fimintervalo} - {self.saida}'
+
 
 class ValeTransporte(Base):
     emp = models.ForeignKey(Empresa, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -234,6 +237,7 @@ class Pagamento(Base):
     def __str__(self):
         return f'{self.func.cod} - {self.valor}'
 
+
 class Holerite(Base):
     class Tipo(models.TextChoices):
         AD = 'ADIANTAMENTO'
@@ -249,6 +253,7 @@ class Holerite(Base):
 
     def __str__(self):
         return f'{self.emp} - {self.comp} - {self.tipo}'
+
 
 class Obras(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
@@ -342,6 +347,7 @@ class UltimoAcesso(models.Model):
 
     class Meta:
         ordering = ['emp', 'comp']
+
 
 class TemAcesso(models.Model):
     escr = models.ManyToManyField(Escritorio)
