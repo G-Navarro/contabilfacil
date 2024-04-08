@@ -376,6 +376,7 @@ class TiposGuia(Base):
 
 class Imposto(Base):
     emp = models.ForeignKey('Empresa', on_delete=models.DO_NOTHING)
+    nome = models.CharField(max_length=250, null=True, blank=True)
     tipoguia = models.ForeignKey(TiposGuia, on_delete=models.DO_NOTHING, null=True, blank=True)
     valor = models.FloatField()
     comp = models.DateField()
