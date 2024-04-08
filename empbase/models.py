@@ -390,7 +390,8 @@ class Imposto(Base):
     arquivos = models.ForeignKey(Rel_Arquivos, on_delete=models.DO_NOTHING, null=True, blank=True)
 
 
-
+    def __str__(self):
+        return f'{self.emp.cod} - {self.tipoguia.nome} - {self.valor} - {self.comp}'
 
 '''from datetime import datetime
 from empbase.models import Empresa, Contribuintes, Escritorio
