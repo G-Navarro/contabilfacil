@@ -5,3 +5,4 @@ ecp/
 __pycache__/
 *.xlsx
 db.sqlite3
+mydatabase
